@@ -7,7 +7,7 @@ CREATE TABLE "artists"
 CREATE TABLE "albums"
 (
     "album_id" SERIAL PRIMARY KEY,
-    "title"    TEXT NOT NULL
+    "title"    TEXT NOT NULL UNIQUE
 );
 
 CREATE TABLE "genres"
