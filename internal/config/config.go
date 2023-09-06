@@ -8,6 +8,7 @@ import (
 type Configuration struct {
 	DatabaseConfiguration
 	HttpServerConfiguration
+	OtherHttpServers
 }
 
 type DatabaseConfiguration struct {
@@ -16,6 +17,10 @@ type DatabaseConfiguration struct {
 
 type HttpServerConfiguration struct {
 	Port string
+}
+
+type OtherHttpServers struct {
+	MusicFilesAddress string
 }
 
 func LoadConfiguration() (config *Configuration, err error) {
@@ -28,6 +33,9 @@ func LoadConfiguration() (config *Configuration, err error) {
 		},
 		HttpServerConfiguration{
 			Port: viper.GetString("HTTP_SERVER_PORT"),
+		},
+		OtherHttpServers{
+			MusicFilesAddress: viper.GetString("WAKARIMI_MUSIC_FILES_ADDRESS"),
 		},
 	}
 

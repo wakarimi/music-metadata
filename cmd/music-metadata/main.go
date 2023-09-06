@@ -26,6 +26,6 @@ func main() {
 		log.Fatal("Failed to run migrations: %v", err)
 	}
 
-	r := api.SetupRouter()
+	r := api.SetupRouter(cfg)
 	r.Run(":" + cfg.Port)
 }
