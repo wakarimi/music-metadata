@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/jmoiron/sqlx"
-	"log"
+	"github.com/rs/zerolog/log"
 	"music-metadata/internal/models"
 )
 
@@ -92,7 +92,7 @@ func (r *AlbumRepository) ReadAllAlbums() ([]models.Album, error) {
 	var albums []models.Album
 	err := r.Db.Select(&albums, query)
 	if err != nil {
-		log.Printf("Failed to fetch albums: %v", err)
+		log.Error().Err(err).Msg("Failed to fetch albums")
 		return nil, err
 	}
 

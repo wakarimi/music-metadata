@@ -1,31 +1,42 @@
 package main
 
 import (
-	"log"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"music-metadata/api"
 	"music-metadata/internal/config"
 	"music-metadata/internal/database"
+	"os"
 )
 
 func main() {
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
 	cfg, err := config.LoadConfiguration()
 	if err != nil {
-		log.Fatal("Failed to load configuration: %v", err)
+		log.Fatal().Err(err).Msg("Failed to load configuration")
+		return
 	}
 
-	log.Println(cfg.DatabaseConnectionString)
 	db, err := database.ConnectDb(cfg.DatabaseConnectionString)
 	if err != nil {
-		log.Fatal("Failed to connect to the database: %v", err)
+		log.Fatal().Err(err).Msg("Failed to connect to the database")
+		return
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			log.Error().Err(err).Msg("Failed to close database connection")
+		}
+	}()
 	database.SetDatabase(db)
 
-	err = database.RunMigrations(db, "./internal/database/migrations")
-	if err != nil {
-		log.Fatal("Failed to run migrations: %v", err)
+	if err = database.RunMigrations(db, "./internal/database/migrations"); err != nil {
+		log.Fatal().Err(err).Msg("Failed to run migrations")
+		return
 	}
 
 	r := api.SetupRouter(cfg)
-	r.Run(":" + cfg.Port)
+	if err = r.Run(":" + cfg.Port); err != nil {
+		log.Fatal().Err(err).Msg("Failed to start server")
+	}
 }

@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/jmoiron/sqlx"
-	"log"
+	"github.com/rs/zerolog/log"
 	"music-metadata/internal/models"
 )
 
@@ -59,7 +59,7 @@ func (r *TrackMetadataRepository) ReadAllTrackMetadata() (trackMetadataList []mo
 	`
 	err = r.Db.Select(&trackMetadataList, query)
 	if err != nil {
-		log.Printf("Failed to fetch track metadata: %v", err)
+		log.Error().Err(err).Msg("Failed to fetch track metadata")
 		return nil, err
 	}
 	return trackMetadataList, nil

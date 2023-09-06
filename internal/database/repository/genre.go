@@ -2,7 +2,7 @@ package repository
 
 import (
 	"github.com/jmoiron/sqlx"
-	"log"
+	"github.com/rs/zerolog/log"
 	"music-metadata/internal/models"
 )
 
@@ -92,7 +92,7 @@ func (r *GenreRepository) ReadAllGenres() ([]models.Genre, error) {
 	var genres []models.Genre
 	err := r.Db.Select(&genres, query)
 	if err != nil {
-		log.Printf("Failed to fetch genres: %v", err)
+		log.Error().Err(err).Msg("Failed to fetch genres")
 		return nil, err
 	}
 
