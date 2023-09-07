@@ -15,6 +15,9 @@ type TrackMetadataRepositoryInterface interface {
 	ReadAllTrackMetadataByArtist(artistId int) (trackMetadataList []models.TrackMetadata, err error)
 	ReadAllTrackMetadataByGenre(genreId int) (trackMetadataList []models.TrackMetadata, err error)
 	DeleteTrackMetadata(trackMetadataId int) error
+	CountTracksByAlbum(albumId int) (count int, err error)
+	CountTracksByArtist(artistId int) (count int, err error)
+	CountTracksByGenre(genreId int) (count int, err error)
 }
 
 type TrackMetadataRepository struct {
@@ -177,4 +180,64 @@ func (r *TrackMetadataRepository) DeleteTrackMetadata(trackMetadataId int) error
 
 	log.Info().Int("trackMetadataId", trackMetadataId).Msg("Track metadata deleted successfully")
 	return nil
+}
+
+func (r *TrackMetadataRepository) CountTracksByAlbum(albumId int) (count int, err error) {
+	log.Debug().Int("albumId", albumId).Msg("Counting tracks by album ID")
+
+	const query = `
+		SELECT COUNT(*)
+		FROM track_metadata
+		WHERE album_id = :album_id
+	`
+	err = r.Db.Get(&count, query, map[string]interface{}{
+		"album_id": albumId,
+	})
+	if err != nil {
+		log.Error().Err(err).Int("albumId", albumId).Msg("Failed to count tracks by album ID")
+		return 0, err
+	}
+
+	log.Debug().Int("count", count).Int("albumId", albumId).Msg("Counted tracks by album ID successfully")
+	return count, nil
+}
+
+func (r *TrackMetadataRepository) CountTracksByArtist(artistId int) (count int, err error) {
+	log.Debug().Int("artistId", artistId).Msg("Counting tracks by artist ID")
+
+	const query = `
+		SELECT COUNT(*)
+		FROM track_metadata
+		WHERE artist_id = :artist_id
+	`
+	err = r.Db.Get(&count, query, map[string]interface{}{
+		"artist_id": artistId,
+	})
+	if err != nil {
+		log.Error().Err(err).Int("artistId", artistId).Msg("Failed to count tracks by artist ID")
+		return 0, err
+	}
+
+	log.Debug().Int("count", count).Int("artistId", artistId).Msg("Counted tracks by artist ID successfully")
+	return count, nil
+}
+
+func (r *TrackMetadataRepository) CountTracksByGenre(genreId int) (count int, err error) {
+	log.Debug().Int("genreId", genreId).Msg("Counting tracks by genre ID")
+
+	const query = `
+		SELECT COUNT(*)
+		FROM track_metadata
+		WHERE genre_id = :genre_id
+	`
+	err = r.Db.Get(&count, query, map[string]interface{}{
+		"genre_id": genreId,
+	})
+	if err != nil {
+		log.Error().Err(err).Int("genreId", genreId).Msg("Failed to count tracks by genre ID")
+		return 0, err
+	}
+
+	log.Debug().Int("count", count).Int("genreId", genreId).Msg("Counted tracks by genre ID successfully")
+	return count, nil
 }
