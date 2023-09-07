@@ -36,7 +36,7 @@ func (h *AlbumHandler) GetAll(c *gin.Context) {
 		albumsResponse = append(albumsResponse, albumResponse)
 	}
 
-	log.Debug().Msg("Fetched all albums successfully")
+	log.Debug().Int("count", len(albumsResponse)).Msg("Fetched all albums successfully")
 	c.JSON(http.StatusOK, AlbumGetAllResponse{
 		Albums: albumsResponse,
 	})
