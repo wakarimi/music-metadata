@@ -1,0 +1,8 @@
+version: "3"
+
+services:
+  wakarimi-music-metadata:
+    container_name: wakarimi-music-metadata
+    build:
+      context: .
+    image: wakarimi-music-metadata
