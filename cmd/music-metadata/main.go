@@ -10,13 +10,17 @@ import (
 )
 
 func main() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).
+		With().Caller().Logger().
+		With().Str("service", "music-files").Logger()
 
 	cfg, err := config.LoadConfiguration()
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to load configuration")
 		return
 	}
+
+	log.Logger = log.Level(zerolog.DebugLevel)
 
 	db, err := database.ConnectDb(cfg.DatabaseConnectionString)
 	if err != nil {

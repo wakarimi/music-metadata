@@ -13,12 +13,19 @@ func SetupRouter(cfg *config.Configuration, db *sqlx.DB) *gin.Engine {
 	artistRepo := repository.NewArtistRepository(db)
 	genreRepo := repository.NewGenreRepository(db)
 	trackMetadataRepo := repository.NewTrackMetadataRepository(db)
+
+	albumHandler := handlers.NewAlbumHandler(albumRepo)
 	musicHandler := handlers.NewMusicHandler(albumRepo, artistRepo, genreRepo, trackMetadataRepo)
 
 	r := gin.Default()
 
 	api := r.Group("/api/music-metadata-service")
 	{
+		albums := api.Group("/albums")
+		{
+			albums.GET("/", func(c *gin.Context) { albumHandler.GetAll(c) })
+		}
+
 		api.POST("/scan", func(c *gin.Context) { musicHandler.Scan(c, cfg) })
 	}
 
