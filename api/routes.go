@@ -11,6 +11,7 @@ import (
 )
 
 func SetupRouter(httpServerConfig *config.HttpServer, db *sqlx.DB) *gin.Engine {
+	log.Debug().Msg("Router setup")
 	gin.SetMode(gin.ReleaseMode)
 
 	albumRepo := repository.NewAlbumRepository(db)
@@ -20,6 +21,7 @@ func SetupRouter(httpServerConfig *config.HttpServer, db *sqlx.DB) *gin.Engine {
 
 	albumHandler := handlers.NewAlbumHandler(albumRepo)
 	artistHandler := handlers.NewArtistHandler(artistRepo)
+	genreHandler := handlers.NewGenreHandler(genreRepo)
 	musicHandler := handlers.NewMusicHandler(albumRepo, artistRepo, genreRepo, trackMetadataRepo)
 
 	r := gin.New()
@@ -34,6 +36,10 @@ func SetupRouter(httpServerConfig *config.HttpServer, db *sqlx.DB) *gin.Engine {
 		artists := api.Group("/artists")
 		{
 			artists.GET("/", artistHandler.GetAll)
+		}
+		genres := api.Group("/genres")
+		{
+			genres.GET("/", genreHandler.GetAll)
 		}
 
 		api.POST("/scan", func(c *gin.Context) { musicHandler.Scan(c, httpServerConfig) })
