@@ -1,13 +1,14 @@
 package repository
 
 import (
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 	"music-metadata/internal/models"
 )
 
 type GenreRepositoryInterface interface {
-	CreateGenre(genre models.Genre) (genreId int, err error)
+	CreateGenre(genre models.Genre) (genreId *int, err error)
 	ReadGenre(genreId int) (genre models.Genre, err error)
 	ReadGenreByName(name string) (genre models.Genre, err error)
 	ReadAllGenres() (genres []models.Genre, err error)
@@ -23,7 +24,7 @@ func NewGenreRepository(db *sqlx.DB) GenreRepositoryInterface {
 	return &GenreRepository{Db: db}
 }
 
-func (r *GenreRepository) CreateGenre(genre models.Genre) (genreId int, err error) {
+func (r *GenreRepository) CreateGenre(genre models.Genre) (genreId *int, err error) {
 	log.Info().Str("name", genre.Name).Msg("Creating new genre")
 
 	query := `
@@ -31,13 +32,28 @@ func (r *GenreRepository) CreateGenre(genre models.Genre) (genreId int, err erro
 		VALUES (:name)
 		RETURNING genre_id
 	`
-	err = r.Db.QueryRow(query, genre).Scan(&genreId)
+
+	rows, err := r.Db.NamedQuery(query, genre)
 	if err != nil {
-		log.Error().Str("name", genre.Name).Msg("Failed to create genre")
-		return 0, err
+		log.Error().Err(err).Str("name", genre.Name).Msg("Failed to create genre")
+		return nil, err
+	}
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Error().Err(closeErr).Msg("Error closing rows")
+		}
+	}()
+
+	if rows.Next() {
+		if err := rows.Scan(&genreId); err != nil {
+			log.Error().Err(err).Msg("Error scanning genreId from result set")
+			return nil, err
+		}
+	} else {
+		return nil, fmt.Errorf("no id returned after genre insert")
 	}
 
-	log.Info().Int("genreId", genreId).Msg("Genre created successfully")
+	log.Info().Int("genreId", *genreId).Msg("Genre created successfully")
 	return genreId, nil
 }
 
@@ -49,12 +65,27 @@ func (r *GenreRepository) ReadGenre(genreId int) (genre models.Genre, err error)
 		FROM genres
 		WHERE genre_id = :genre_id
 	`
-	err = r.Db.Get(&genre, query, map[string]interface{}{
+
+	rows, err := r.Db.NamedQuery(query, map[string]interface{}{
 		"genre_id": genreId,
 	})
 	if err != nil {
 		log.Error().Int("genreId", genreId).Msg("Failed to fetch genre by ID")
 		return models.Genre{}, err
+	}
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Error().Err(closeErr).Msg("Error closing rows")
+		}
+	}()
+
+	if rows.Next() {
+		if err := rows.StructScan(&genre); err != nil {
+			log.Error().Int("genreId", genreId).Msg("Error scanning row into struct")
+			return models.Genre{}, err
+		}
+	} else {
+		return models.Genre{}, fmt.Errorf("no genre found with ID: %d", genreId)
 	}
 
 	log.Debug().Int("genreId", genreId).Msg("Fetched genre by ID successfully")
@@ -69,12 +100,27 @@ func (r *GenreRepository) ReadGenreByName(name string) (genre models.Genre, err 
 		FROM genres
 		WHERE name = :name
 	`
-	err = r.Db.Get(&genre, query, map[string]interface{}{
+
+	rows, err := r.Db.NamedQuery(query, map[string]interface{}{
 		"name": name,
 	})
 	if err != nil {
 		log.Error().Str("name", name).Msg("Failed to fetch genre by name")
 		return models.Genre{}, err
+	}
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Error().Err(closeErr).Msg("Error closing rows")
+		}
+	}()
+
+	if rows.Next() {
+		if err := rows.StructScan(&genre); err != nil {
+			log.Error().Str("name", name).Msg("Error scanning row into struct")
+			return models.Genre{}, err
+		}
+	} else {
+		return models.Genre{}, fmt.Errorf("no genre found with name: %s", name)
 	}
 
 	log.Debug().Str("name", name).Msg("Fetched genre by name successfully")
@@ -105,12 +151,22 @@ func (r *GenreRepository) DeleteGenre(genreId int) error {
 		DELETE FROM genres
 		WHERE genre_id = :genre_id
 	`
-	_, err := r.Db.Exec(query, map[string]interface{}{
+
+	result, err := r.Db.NamedExec(query, map[string]interface{}{
 		"genre_id": genreId,
 	})
 	if err != nil {
 		log.Error().Err(err).Int("genreId", genreId).Msg("Failed to delete genre")
 		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Error().Err(err).Int("genreId", genreId).Msg("Failed to get rows affected after genre deletion")
+		return err
+	}
+	if rowsAffected == 0 {
+		log.Warn().Int("genreId", genreId).Msg("No rows affected while deleting genre")
 	}
 
 	log.Info().Int("genreId", genreId).Msg("Genre deleted successfully")
@@ -130,9 +186,24 @@ func (r *GenreRepository) IsGenreExistsByName(name string) (bool, error) {
 	args := map[string]interface{}{
 		"name": name,
 	}
-	if err := r.Db.Get(&count, query, args); err != nil {
+
+	rows, err := r.Db.NamedQuery(query, args)
+	if err != nil {
 		log.Error().Err(err).Str("name", name).Msg("Failed to check genre existence by name")
 		return false, err
+	}
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Error().Err(closeErr).Msg("Error closing rows")
+		}
+	}()
+
+	if rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			log.Error().Err(err).Str("name", name).Msg("Failed to scan count from result set")
+			return false, err
+		}
 	}
 
 	return count > 0, nil

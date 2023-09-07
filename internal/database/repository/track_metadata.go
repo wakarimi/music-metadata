@@ -1,23 +1,26 @@
 package repository
 
 import (
+	"fmt"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 	"music-metadata/internal/models"
 )
 
 type TrackMetadataRepositoryInterface interface {
-	CreateTrackMetadata(trackMetadata models.TrackMetadata) (trackMetadataId int, err error)
+	CreateTrackMetadata(trackMetadata models.TrackMetadata) (trackMetadataId *int, err error)
 	ReadTrackMetadata(trackMetadataId int) (trackMetadata models.TrackMetadata, err error)
 	ReadTrackMetadataByTrackId(trackId int) (trackMetadata models.TrackMetadata, err error)
 	ReadAllTrackMetadata() (trackMetadataList []models.TrackMetadata, err error)
 	ReadAllTrackMetadataByAlbum(albumId int) (trackMetadataList []models.TrackMetadata, err error)
 	ReadAllTrackMetadataByArtist(artistId int) (trackMetadataList []models.TrackMetadata, err error)
 	ReadAllTrackMetadataByGenre(genreId int) (trackMetadataList []models.TrackMetadata, err error)
+	UpdateTrackMetadata(trackMetadataId int, trackMetadata models.TrackMetadata) error
 	DeleteTrackMetadata(trackMetadataId int) error
 	CountTracksByAlbum(albumId int) (count int, err error)
 	CountTracksByArtist(artistId int) (count int, err error)
 	CountTracksByGenre(genreId int) (count int, err error)
+	IsTrackMetadataExistsByTrackId(trackId int) (bool, error)
 }
 
 type TrackMetadataRepository struct {
@@ -28,21 +31,35 @@ func NewTrackMetadataRepository(db *sqlx.DB) TrackMetadataRepositoryInterface {
 	return &TrackMetadataRepository{Db: db}
 }
 
-func (r *TrackMetadataRepository) CreateTrackMetadata(trackMetadata models.TrackMetadata) (trackMetadataId int, err error) {
+func (r *TrackMetadataRepository) CreateTrackMetadata(trackMetadata models.TrackMetadata) (trackMetadataId *int, err error) {
 	log.Info().Msg("Creating new track metadata")
 
 	const query = `
 		INSERT INTO track_metadata(track_id, title, artist_id, album_id, genre_id, bitrate, channels, sample_rate, duration)
-		VALUES (:track_id :title :artist_id, :album_id, :genre_id, :bitrate, :channels, :sample_rate, :duration)
+		VALUES (:track_id, :title, :artist_id, :album_id, :genre_id, :bitrate, :channels, :sample_rate, :duration)
 		RETURNING track_metadata_id
 	`
-	err = r.Db.QueryRow(query, trackMetadata).Scan(&trackMetadataId)
+
+	rows, err := r.Db.NamedQuery(query, trackMetadata)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create track metadata")
-		return 0, err
+		return nil, err
+	}
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Error().Err(closeErr).Msg("Error closing rows")
+		}
+	}()
+
+	if rows.Next() {
+		if err := rows.Scan(&trackMetadataId); err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, fmt.Errorf("no id returned after track metadata insert")
 	}
 
-	log.Info().Int("trackMetadataId", trackMetadataId).Msg("Track metadata created successfully")
+	log.Info().Int("trackMetadataId", *trackMetadataId).Msg("Track metadata created successfully")
 	return trackMetadataId, nil
 }
 
@@ -74,12 +91,27 @@ func (r *TrackMetadataRepository) ReadTrackMetadataByTrackId(trackId int) (track
 		FROM track_metadata
 		WHERE track_id = :track_id
 	`
-	err = r.Db.Get(&trackMetadata, query, map[string]interface{}{
+
+	rows, err := r.Db.NamedQuery(query, map[string]interface{}{
 		"track_id": trackId,
 	})
 	if err != nil {
-		log.Error().Err(err).Int("trackId", trackId).Msg("Failed to fetch track metadata by track ID")
+		log.Error().Err(err).Int("trackId", trackId).Msg("Failed to execute query for track metadata by track ID")
 		return models.TrackMetadata{}, err
+	}
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Error().Err(closeErr).Msg("Error closing rows")
+		}
+	}()
+
+	if rows.Next() {
+		if err := rows.StructScan(&trackMetadata); err != nil {
+			log.Error().Err(err).Int("trackId", trackId).Msg("Failed to scan row into struct")
+			return models.TrackMetadata{}, err
+		}
+	} else {
+		return models.TrackMetadata{}, fmt.Errorf("no track metadata found with track ID: %d", trackId)
 	}
 
 	log.Debug().Int("trackId", trackId).Msg("Fetched track metadata by track ID successfully")
@@ -163,6 +195,43 @@ func (r *TrackMetadataRepository) ReadAllTrackMetadataByGenre(genreId int) (trac
 	return trackMetadataList, nil
 }
 
+func (r *TrackMetadataRepository) UpdateTrackMetadata(trackMetadataId int, trackMetadata models.TrackMetadata) error {
+	log.Info().Int("trackMetadataId", trackMetadataId).Msg("Updating track metadata")
+
+	const query = `
+		UPDATE track_metadata
+		SET title = :title,
+			artist_id = :artist_id,
+			album_id = :album_id,
+			genre_id = :genre_id,
+			bitrate = :bitrate,
+			channels = :channels,
+			sample_rate = :sample_rate,
+			duration = :duration
+		WHERE track_metadata_id = :track_metadata_id
+	`
+
+	trackMetadata.TrackMetadataId = trackMetadataId
+
+	result, err := r.Db.NamedExec(query, trackMetadata)
+	if err != nil {
+		log.Error().Err(err).Int("trackMetadataId", trackMetadataId).Msg("Failed to update track metadata")
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Error().Err(err).Int("trackMetadataId", trackMetadataId).Msg("Failed to get rows affected after track metadata update")
+		return err
+	}
+	if rowsAffected == 0 {
+		log.Warn().Int("trackMetadataId", trackMetadataId).Msg("No rows affected while updating track metadata")
+	}
+
+	log.Info().Int("trackMetadataId", trackMetadataId).Msg("Track metadata updated successfully")
+	return nil
+}
+
 func (r *TrackMetadataRepository) DeleteTrackMetadata(trackMetadataId int) error {
 	log.Info().Int("trackMetadataId", trackMetadataId).Msg("Deleting track metadata")
 
@@ -240,4 +309,40 @@ func (r *TrackMetadataRepository) CountTracksByGenre(genreId int) (count int, er
 
 	log.Debug().Int("count", count).Int("genreId", genreId).Msg("Counted tracks by genre ID successfully")
 	return count, nil
+}
+
+func (r *TrackMetadataRepository) IsTrackMetadataExistsByTrackId(trackId int) (bool, error) {
+	log.Debug().Int("trackId", trackId).Msg("Checking if track metadata exists by trackId")
+
+	var count int
+
+	query := `
+		SELECT COUNT(*)
+		FROM track_metadata
+		WHERE track_id = :trackId
+	`
+	args := map[string]interface{}{
+		"trackId": trackId,
+	}
+
+	rows, err := r.Db.NamedQuery(query, args)
+	if err != nil {
+		log.Error().Err(err).Int("trackId", trackId).Msg("Failed to check track metadata existence by trackId")
+		return false, err
+	}
+	defer func() {
+		if closeErr := rows.Close(); closeErr != nil {
+			log.Error().Err(closeErr).Msg("Error closing rows")
+		}
+	}()
+
+	if rows.Next() {
+		err = rows.Scan(&count)
+		if err != nil {
+			log.Error().Err(err).Int("trackId", trackId).Msg("Failed to scan count from result set")
+			return false, err
+		}
+	}
+
+	return count > 0, nil
 }
