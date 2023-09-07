@@ -19,6 +19,8 @@ CREATE TABLE "genres"
 CREATE TABLE "track_metadata"
 (
     "track_metadata_id" SERIAL PRIMARY KEY,
+    "track_id"          INTEGER,
+    "title"             TEXT,
     "artist_id"         INTEGER,
     "album_id"          INTEGER,
     "genre_id"          INTEGER,

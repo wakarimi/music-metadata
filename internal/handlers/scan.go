@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"music-metadata/internal/config"
+	"music-metadata/internal/handlers/types"
 	"net/http"
 )
 
@@ -25,11 +26,12 @@ type ScanTracksContent struct {
 }
 
 func Scan(c *gin.Context, cfg *config.Configuration) {
-	log.Println("Что")
 	resp, err := http.Get(cfg.MusicFilesAddress + "/api/music-files-service/tracks")
 	if err != nil {
 		log.Println("Failed to fetch tracks:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch tracks"})
+		c.JSON(http.StatusInternalServerError, types.Error{
+			Error: "Failed to fetch tracks",
+		})
 		return
 	}
 	defer resp.Body.Close()
@@ -37,7 +39,9 @@ func Scan(c *gin.Context, cfg *config.Configuration) {
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("Failed to read response:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response"})
+		c.JSON(http.StatusInternalServerError, types.Error{
+			Error: "Failed to read response",
+		})
 		return
 	}
 
@@ -45,7 +49,9 @@ func Scan(c *gin.Context, cfg *config.Configuration) {
 	err = json.Unmarshal(body, &tracksResponse)
 	if err != nil {
 		log.Println("Failed to unmarshal response:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to unmarshal response"})
+		c.JSON(http.StatusInternalServerError, types.Error{
+			Error: "Failed to unmarshal response",
+		})
 		return
 	}
 
