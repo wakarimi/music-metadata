@@ -30,10 +30,10 @@ type ScanTracksContent struct {
 	Tracks []ScanTrack `json:"tracks"`
 }
 
-func (h *MusicHandler) Scan(c *gin.Context, cfg *config.Configuration) {
+func (h *MusicHandler) Scan(c *gin.Context, httpServerConfig *config.HttpServer) {
 	log.Info().Msg("Scanning library")
 
-	resp, err := http.Get(cfg.MusicFilesAddress + "/api/music-files-service/tracks")
+	resp, err := http.Get(httpServerConfig.OtherHttpServers.MusicFilesAddress + "/api/music-files-service/tracks")
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to fetch tracks")
 		c.JSON(http.StatusInternalServerError, types.Error{
@@ -63,7 +63,7 @@ func (h *MusicHandler) Scan(c *gin.Context, cfg *config.Configuration) {
 	}
 
 	for _, track := range tracksResponse.Tracks {
-		trackData, err := downloadTrack(cfg.MusicFilesAddress, track.TrackId)
+		trackData, err := downloadTrack(httpServerConfig.MusicFilesAddress, track.TrackId)
 		if err != nil {
 			log.Error().Err(err).Int("trackId", track.TrackId).Msg("Failed to download track")
 			continue

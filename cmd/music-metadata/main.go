@@ -1,6 +1,8 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"music-metadata/api"
@@ -10,37 +12,65 @@ import (
 )
 
 func main() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr}).
-		With().Caller().Logger().
-		With().Str("service", "music-files").Logger()
+	cfg := loadConfiguration()
+	initializeLogger(cfg.Logger.Level)
 
+	db := initializeDatabase(cfg.Database.ConnectionString)
+	defer closeDatabase(db)
+	initializeMigrations(db)
+
+	server := initializeServer(&cfg.HttpServer, db)
+	runServer(server, cfg.HttpServer.Port)
+}
+
+func loadConfiguration() *config.Configuration {
 	cfg, err := config.LoadConfiguration()
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to load configuration")
-		return
+		log.Panic().Err(err).Msg("Failed to load configuration")
 	}
+	log.Debug().Msg("Configuration loaded")
+	return cfg
+}
 
-	log.Logger = log.Level(zerolog.DebugLevel)
+func initializeLogger(level zerolog.Level) {
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout}).
+		With().Caller().Logger().
+		With().Str("service", "music-metadata").Logger().
+		Level(level)
+	log.Debug().Msg("Logger initialized")
+}
 
-	db, err := database.ConnectDb(cfg.DatabaseConnectionString)
+func initializeDatabase(connectionString string) (db *sqlx.DB) {
+	db, err := database.ConnectDb(connectionString)
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to connect to the database")
-		return
+		log.Panic().Msg("Failed to initialize database")
 	}
-	defer func() {
-		if err := db.Close(); err != nil {
-			log.Error().Err(err).Msg("Failed to close database connection")
-		}
-	}()
-	database.SetDatabase(db)
+	log.Debug().Msg("Database initialized")
+	return db
+}
 
-	if err = database.RunMigrations(db, "./internal/database/migrations"); err != nil {
-		log.Fatal().Err(err).Msg("Failed to run migrations")
-		return
+func closeDatabase(db *sqlx.DB) {
+	if err := db.Close(); err != nil {
+		log.Error().Err(err).Msg("Failed to close database connection")
 	}
+	log.Debug().Msg("Database connection closed")
+}
 
-	r := api.SetupRouter(cfg, db)
-	if err = r.Run(":" + cfg.Port); err != nil {
-		log.Fatal().Err(err).Msg("Failed to start server")
+func initializeMigrations(db *sqlx.DB) {
+	if err := database.RunMigrations(db, "./internal/database/migrations"); err != nil {
+		log.Panic().Err(err).Msg("Failed to apply migrations")
+	}
+	log.Debug().Msg("Data schema actualized")
+}
+
+func initializeServer(httpServerConfig *config.HttpServer, db *sqlx.DB) *gin.Engine {
+	r := api.SetupRouter(httpServerConfig, db)
+	log.Debug().Msg("Router initialized")
+	return r
+}
+
+func runServer(server *gin.Engine, port string) {
+	if err := server.Run(":" + port); err != nil {
+		log.Panic().Err(err).Msg("Failed to start server")
 	}
 }
