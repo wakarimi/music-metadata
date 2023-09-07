@@ -35,7 +35,7 @@ func main() {
 		return
 	}
 
-	r := api.SetupRouter(cfg)
+	r := api.SetupRouter(cfg, db)
 	if err = r.Run(":" + cfg.Port); err != nil {
 		log.Fatal().Err(err).Msg("Failed to start server")
 	}
