@@ -19,7 +19,7 @@ type ArtistGetAllResponse struct {
 func (h *ArtistHandler) GetAll(c *gin.Context) {
 	log.Debug().Msg("Fetching all artists")
 
-	artists, err := h.ArtistRepo.ReadAllArtists()
+	artists, err := h.ArtistRepo.ReadAll()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get all artists")
 		c.JSON(http.StatusInternalServerError, types.Error{

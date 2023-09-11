@@ -96,18 +96,18 @@ func (h *MusicHandler) Scan(c *gin.Context, httpServerConfig *config.HttpServer)
 		}
 
 		var artistId *int
-		artistExists, err := h.ArtistRepo.IsArtistExistsByName(metadata.Artist())
+		artistExists, err := h.ArtistRepo.IsExistsByName(metadata.Artist())
 		if err != nil {
 			continue
 		}
 		if artistExists {
-			artist, err := h.ArtistRepo.ReadArtistByName(metadata.Artist())
+			artist, err := h.ArtistRepo.ReadByName(metadata.Artist())
 			if err != nil {
 				continue
 			}
 			artistId = &artist.ArtistId
 		} else {
-			artistId, err = h.ArtistRepo.CreateArtist(models.Artist{
+			*artistId, err = h.ArtistRepo.Create(models.Artist{
 				Name: metadata.Artist(),
 			})
 			if err != nil {
