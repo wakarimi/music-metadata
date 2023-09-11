@@ -1,4 +1,4 @@
-package handlers
+package artist
 
 import (
 	"github.com/gin-gonic/gin"

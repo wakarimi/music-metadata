@@ -1,8 +1,6 @@
-package handlers
+package track_metadata
 
-import (
-	"music-metadata/internal/database/repository"
-)
+import "music-metadata/internal/database/repository"
 
 type MusicHandler struct {
 	AlbumRepo  repository.AlbumRepositoryInterface

@@ -6,7 +6,10 @@ import (
 	"github.com/rs/zerolog/log"
 	"music-metadata/internal/config"
 	"music-metadata/internal/database/repository"
-	"music-metadata/internal/handlers"
+	"music-metadata/internal/handlers/album"
+	"music-metadata/internal/handlers/artist"
+	"music-metadata/internal/handlers/genre"
+	"music-metadata/internal/handlers/track_metadata"
 	"music-metadata/internal/middleware"
 )
 
@@ -19,10 +22,10 @@ func SetupRouter(httpServerConfig *config.HttpServer, db *sqlx.DB) *gin.Engine {
 	genreRepo := repository.NewGenreRepository(db)
 	trackMetadataRepo := repository.NewTrackMetadataRepository(db)
 
-	albumHandler := handlers.NewAlbumHandler(albumRepo)
-	artistHandler := handlers.NewArtistHandler(artistRepo)
-	genreHandler := handlers.NewGenreHandler(genreRepo)
-	musicHandler := handlers.NewMusicHandler(albumRepo, artistRepo, genreRepo, trackMetadataRepo)
+	albumHandler := album.NewAlbumHandler(albumRepo)
+	artistHandler := artist.NewArtistHandler(artistRepo)
+	genreHandler := genre.NewGenreHandler(genreRepo)
+	musicHandler := track_metadata.NewMusicHandler(albumRepo, artistRepo, genreRepo, trackMetadataRepo)
 
 	r := gin.New()
 	r.Use(middleware.ZerologMiddleware(log.Logger))

@@ -1,4 +1,4 @@
-package handlers
+package artist
 
 import "music-metadata/internal/database/repository"
 

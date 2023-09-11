@@ -1,4 +1,4 @@
-package handlers
+package genre
 
 import (
 	"github.com/gin-gonic/gin"

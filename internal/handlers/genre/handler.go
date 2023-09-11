@@ -1,4 +1,4 @@
-package handlers
+package genre
 
 import "music-metadata/internal/database/repository"
 
