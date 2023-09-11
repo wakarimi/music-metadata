@@ -19,7 +19,7 @@ type GenreGetAllResponse struct {
 func (h *GenreHandler) GetAll(c *gin.Context) {
 	log.Debug().Msg("Fetching all genres")
 
-	genres, err := h.GenreRepo.ReadAllGenres()
+	genres, err := h.GenreRepo.ReadAll()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get all genres")
 		c.JSON(http.StatusInternalServerError, types.Error{

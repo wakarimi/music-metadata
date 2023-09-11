@@ -76,18 +76,18 @@ func (h *MusicHandler) Scan(c *gin.Context, httpServerConfig *config.HttpServer)
 		}
 
 		var albumId *int
-		albumExists, err := h.AlbumRepo.IsAlbumExistsByTitle(metadata.Album())
+		albumExists, err := h.AlbumRepo.IsExistsByTitle(metadata.Album())
 		if err != nil {
 			continue
 		}
 		if albumExists {
-			album, err := h.AlbumRepo.ReadAlbumByTitle(metadata.Album())
+			album, err := h.AlbumRepo.ReadByTitle(metadata.Album())
 			if err != nil {
 				continue
 			}
 			albumId = &album.AlbumId
 		} else {
-			albumId, err = h.AlbumRepo.CreateAlbum(models.Album{
+			*albumId, err = h.AlbumRepo.Create(models.Album{
 				Title: metadata.Album(),
 			})
 			if err != nil {
@@ -116,18 +116,18 @@ func (h *MusicHandler) Scan(c *gin.Context, httpServerConfig *config.HttpServer)
 		}
 
 		var genreId *int
-		genreExists, err := h.GenreRepo.IsGenreExistsByName(metadata.Genre())
+		genreExists, err := h.GenreRepo.IsExistsByName(metadata.Genre())
 		if err != nil {
 			continue
 		}
 		if genreExists {
-			genre, err := h.GenreRepo.ReadGenreByName(metadata.Genre())
+			genre, err := h.GenreRepo.ReadByName(metadata.Genre())
 			if err != nil {
 				continue
 			}
 			genreId = &genre.GenreId
 		} else {
-			genreId, err = h.GenreRepo.CreateGenre(models.Genre{
+			*genreId, err = h.GenreRepo.Create(models.Genre{
 				Name: metadata.Genre(),
 			})
 			if err != nil {

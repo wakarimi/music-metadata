@@ -8,12 +8,18 @@ import (
 )
 
 type AlbumRepositoryInterface interface {
-	CreateAlbum(album models.Album) (albumId *int, err error)
-	ReadAlbum(albumId int) (album models.Album, err error)
-	ReadAlbumByTitle(title string) (album models.Album, err error)
-	ReadAllAlbums() (albums []models.Album, err error)
-	DeleteAlbum(albumId int) error
-	IsAlbumExistsByTitle(title string) (bool, error)
+	Create(album models.Album) (albumId int, err error)
+	CreateTx(tx *sqlx.Tx, album models.Album) (albumId int, err error)
+	Read(albumId int) (album models.Album, err error)
+	ReadTx(tx *sqlx.Tx, albumId int) (album models.Album, err error)
+	ReadByTitle(title string) (album models.Album, err error)
+	ReadByTitleTx(tx *sqlx.Tx, title string) (album models.Album, err error)
+	ReadAll() (albums []models.Album, err error)
+	ReadAllTx(tx *sqlx.Tx) (albums []models.Album, err error)
+	Delete(albumId int) (err error)
+	DeleteTx(tx *sqlx.Tx, albumId int) (err error)
+	IsExistsByTitle(title string) (exists bool, err error)
+	IsExistsByTitleTx(tx *sqlx.Tx, title string) (exists bool, err error)
 }
 
 type AlbumRepository struct {
@@ -24,187 +30,230 @@ func NewAlbumRepository(db *sqlx.DB) AlbumRepositoryInterface {
 	return &AlbumRepository{Db: db}
 }
 
-func (r *AlbumRepository) CreateAlbum(album models.Album) (albumId *int, err error) {
-	log.Info().Str("title", album.Title).Msg("Creating new album")
+func (r *AlbumRepository) Create(album models.Album) (albumId int, err error) {
+	log.Debug().Str("title", album.Title).Msg("Creating new album")
+	return r.create(r.Db, album)
+}
 
+func (r *AlbumRepository) CreateTx(tx *sqlx.Tx, album models.Album) (albumId int, err error) {
+	log.Debug().Str("title", album.Title).Msg("Creating new album transactional")
+	return r.create(tx, album)
+}
+
+func (r *AlbumRepository) create(queryer Queryer, album models.Album) (albumId int, err error) {
 	query := `
 		INSERT INTO albums(title)
 		VALUES (:title)
 		RETURNING album_id
 	`
-
-	rows, err := r.Db.NamedQuery(query, album)
+	rows, err := queryer.NamedQuery(query, album)
 	if err != nil {
 		log.Error().Err(err).Str("title", album.Title).Msg("Failed to create album")
-		return nil, err
+		return 0, err
 	}
-	defer func() {
-		if closeErr := rows.Close(); closeErr != nil {
-			log.Error().Err(closeErr).Msg("Error closing rows")
-		}
-	}()
+	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.Scan(&albumId); err != nil {
-			log.Error().Err(err).Msg("Error scanning albumId from result set")
-			return nil, err
+			log.Error().Err(err).Str("title", album.Title).Msg("Failed to scan id into filed")
+			return 0, err
 		}
 	} else {
-		return nil, fmt.Errorf("no id returned after album insert")
+		err := fmt.Errorf("no id returned after album insert")
+		log.Error().Err(err).Str("title", album.Title).Msg("No id returned after album insert")
+		return 0, err
 	}
 
-	log.Info().Int("albumId", *albumId).Msg("Album created successfully")
+	log.Debug().Int("id", albumId).Str("title", album.Title).Msg("Album created successfully")
 	return albumId, nil
 }
 
-func (r *AlbumRepository) ReadAlbum(albumId int) (album models.Album, err error) {
-	log.Debug().Int("albumId", albumId).Msg("Fetching album by ID")
+func (r *AlbumRepository) Read(albumId int) (album models.Album, err error) {
+	log.Debug().Int("id", albumId).Msg("Fetching album")
+	return r.read(r.Db, albumId)
+}
 
+func (r *AlbumRepository) ReadTx(tx *sqlx.Tx, albumId int) (album models.Album, err error) {
+	log.Debug().Int("id", albumId).Msg("Fetching album transactional")
+	return r.read(tx, albumId)
+}
+
+func (r *AlbumRepository) read(queryer Queryer, albumId int) (album models.Album, err error) {
 	query := `
 		SELECT *
 		FROM albums
 		WHERE album_id = :album_id
 	`
-
-	rows, err := r.Db.NamedQuery(query, map[string]interface{}{
+	args := map[string]interface{}{
 		"album_id": albumId,
-	})
+	}
+	rows, err := queryer.NamedQuery(query, args)
 	if err != nil {
-		log.Error().Int("albumId", albumId).Msg("Failed to fetch album by ID")
+		log.Error().Err(err).Int("id", albumId).Msg("Failed to fetch album")
 		return models.Album{}, err
 	}
-	defer func() {
-		if closeErr := rows.Close(); closeErr != nil {
-			log.Error().Err(closeErr).Msg("Error closing rows")
-		}
-	}()
 
 	if rows.Next() {
 		if err := rows.StructScan(&album); err != nil {
-			log.Error().Int("albumId", albumId).Msg("Error scanning row into struct")
+			log.Error().Err(err).Int("id", albumId).Msg("Failed to scan album into struct")
 			return models.Album{}, err
 		}
 	} else {
-		return models.Album{}, fmt.Errorf("no album found with ID: %d", albumId)
+		err := fmt.Errorf("no album found with id: %d", albumId)
+		log.Error().Err(err).Int("id", albumId).Msg("No album found")
+		return models.Album{}, err
 	}
 
-	log.Debug().Int("albumId", albumId).Msg("Fetched album by ID successfully")
+	log.Debug().Str("title", album.Title).Msg("Album fetched successfully")
 	return album, nil
 }
 
-func (r *AlbumRepository) ReadAlbumByTitle(title string) (album models.Album, err error) {
+func (r *AlbumRepository) ReadByTitle(title string) (album models.Album, err error) {
 	log.Debug().Str("title", title).Msg("Fetching album by title")
+	return r.readByTitle(r.Db, title)
+}
 
+func (r *AlbumRepository) ReadByTitleTx(tx *sqlx.Tx, title string) (album models.Album, err error) {
+	log.Debug().Str("title", title).Msg("Fetching album by title transactional")
+	return r.readByTitle(tx, title)
+}
+
+func (r *AlbumRepository) readByTitle(queryer Queryer, title string) (album models.Album, err error) {
 	query := `
 		SELECT *
-		FROM albums
-		WHERE title = :title
-	`
-
-	rows, err := r.Db.NamedQuery(query, map[string]interface{}{
-		"title": title,
-	})
-	if err != nil {
-		log.Error().Str("title", title).Msg("Failed to fetch album by title")
-		return models.Album{}, err
-	}
-	defer func() {
-		if closeErr := rows.Close(); closeErr != nil {
-			log.Error().Err(closeErr).Msg("Error closing rows")
-		}
-	}()
-
-	if rows.Next() {
-		if err := rows.StructScan(&album); err != nil {
-			log.Error().Str("title", title).Msg("Error scanning row into struct")
-			return models.Album{}, err
-		}
-	} else {
-		return models.Album{}, fmt.Errorf("no album found with title: %s", title)
-	}
-
-	log.Debug().Str("title", title).Msg("Fetched album by title successfully")
-	return album, nil
-}
-
-func (r *AlbumRepository) ReadAllAlbums() (albums []models.Album, err error) {
-	log.Info().Msg("Fetching all albums")
-
-	query := `
-		SELECT *
-		FROM albums
-	`
-	err = r.Db.Select(&albums, query)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to fetch albums")
-		return nil, err
-	}
-
-	log.Info().Int("count", len(albums)).Msg("Fetched all albums successfully")
-	return albums, nil
-}
-
-func (r *AlbumRepository) DeleteAlbum(albumId int) error {
-	log.Info().Int("albumId", albumId).Msg("Deleting album")
-
-	query := `
-		DELETE FROM albums
-		WHERE album_id = :album_id
-	`
-
-	result, err := r.Db.NamedExec(query, map[string]interface{}{
-		"album_id": albumId,
-	})
-	if err != nil {
-		log.Error().Err(err).Int("albumId", albumId).Msg("Failed to delete album")
-		return err
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		log.Error().Err(err).Int("albumId", albumId).Msg("Failed to get rows affected after album deletion")
-		return err
-	}
-	if rowsAffected == 0 {
-		log.Warn().Int("albumId", albumId).Msg("No rows affected while deleting album")
-	}
-
-	log.Info().Int("albumId", albumId).Msg("Album deleted successfully")
-	return nil
-}
-
-func (r *AlbumRepository) IsAlbumExistsByTitle(title string) (bool, error) {
-	log.Debug().Str("title", title).Msg("Checking if album exists by title")
-
-	var count int
-
-	query := `
-		SELECT COUNT(*)
 		FROM albums
 		WHERE title = :title
 	`
 	args := map[string]interface{}{
 		"title": title,
 	}
-
-	rows, err := r.Db.NamedQuery(query, args)
+	rows, err := queryer.NamedQuery(query, args)
 	if err != nil {
-		log.Error().Err(err).Str("title", title).Msg("Failed to delete album")
-		return false, err
+		log.Error().Err(err).Str("title", title).Msg("Failed to fetch album")
+		return models.Album{}, err
 	}
-	defer func() {
-		if closeErr := rows.Close(); closeErr != nil {
-			log.Error().Err(closeErr).Msg("Error closing rows")
-		}
-	}()
 
 	if rows.Next() {
-		err = rows.Scan(&count)
-		if err != nil {
-			log.Error().Err(err).Str("title", title).Msg("Failed to scan count from result set")
+		if err := rows.StructScan(&album); err != nil {
+			log.Error().Err(err).Str("title", title).Msg("Failed to scan album into struct")
+			return models.Album{}, err
+		}
+	} else {
+		err := fmt.Errorf("no album found with title: %s", title)
+		log.Error().Err(err).Str("title", title).Msg("No album found")
+		return models.Album{}, err
+	}
+
+	log.Debug().Int("id", album.AlbumId).Msg("Album fetched by title successfully")
+	return album, nil
+}
+
+func (r *AlbumRepository) ReadAll() (albums []models.Album, err error) {
+	log.Debug().Msg("Fetching all albums")
+	return r.readAll(r.Db)
+}
+
+func (r *AlbumRepository) ReadAllTx(tx *sqlx.Tx) (albums []models.Album, err error) {
+	log.Debug().Msg("Fetching all albums transactional")
+	return r.readAll(tx)
+}
+
+func (r *AlbumRepository) readAll(queryer Queryer) (albums []models.Album, err error) {
+	log.Debug().Msg("Fetching all albums")
+
+	query := `
+		SELECT *
+		FROM albums
+	`
+	rows, err := queryer.Queryx(query)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to fetch albums")
+		return make([]models.Album, 0), err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var album models.Album
+		if err = rows.StructScan(&album); err != nil {
+			log.Error().Err(err).Msg("Failed to scan albums data")
+			return make([]models.Album, 0), err
+		}
+		albums = append(albums, album)
+	}
+
+	log.Debug().Int("count", len(albums)).Msg("All albums fetched successfully")
+	return albums, nil
+}
+
+func (r *AlbumRepository) Delete(albumId int) (err error) {
+	log.Debug().Int("id", albumId).Msg("Deleting album")
+	return r.delete(r.Db, albumId)
+}
+
+func (r *AlbumRepository) DeleteTx(tx *sqlx.Tx, albumId int) (err error) {
+	log.Debug().Int("id", albumId).Msg("Deleting album transactional")
+	return r.delete(tx, albumId)
+}
+
+func (r *AlbumRepository) delete(queryer Queryer, albumId int) (err error) {
+	log.Debug().Int("id", albumId).Msg("Deleting album")
+
+	query := `
+		DELETE FROM albums
+		WHERE album_id = :album_id
+	`
+	args := map[string]interface{}{
+		"album_id": albumId,
+	}
+	_, err = queryer.NamedExec(query, args)
+	if err != nil {
+		log.Error().Err(err).Int("id", albumId).Msg("Failed to delete album")
+		return err
+	}
+
+	log.Debug().Int("id", albumId).Msg("Album deleted successfully")
+	return nil
+}
+
+func (r *AlbumRepository) IsExistsByTitle(title string) (exists bool, err error) {
+	log.Debug().Str("title", title).Msg("Checking if album exists by title")
+	return r.isExistsByTitle(r.Db, title)
+}
+
+func (r *AlbumRepository) IsExistsByTitleTx(tx *sqlx.Tx, title string) (exists bool, err error) {
+	log.Debug().Str("title", title).Msg("Checking if album exists by title transactional")
+	return r.isExistsByTitle(r.Db, title)
+}
+
+func (r *AlbumRepository) isExistsByTitle(queryer Queryer, title string) (exists bool, err error) {
+	query := `
+		SELECT EXISTS (
+			SELECT 1 
+			FROM albums
+			WHERE title = :title
+		)
+	`
+	args := map[string]interface{}{
+		"title": title,
+	}
+	row, err := queryer.NamedQuery(query, args)
+	if err != nil {
+		log.Error().Err(err).Str("title", title).Msg("Failed to execute query to check album existence")
+		return false, err
+	}
+	defer row.Close()
+
+	if row.Next() {
+		if err = row.Scan(&exists); err != nil {
+			log.Error().Err(err).Str("title", title).Msg("Failed to scan result of album existence check")
 			return false, err
 		}
 	}
 
-	return count > 0, nil
+	if exists {
+		log.Debug().Str("title", title).Msg("Album exists")
+	} else {
+		log.Debug().Str("title", title).Msg("No album found")
+	}
+	return exists, nil
 }

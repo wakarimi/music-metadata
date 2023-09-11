@@ -19,7 +19,7 @@ type AlbumGetAllResponse struct {
 func (h *AlbumHandler) GetAll(c *gin.Context) {
 	log.Debug().Msg("Fetching all albums")
 
-	albums, err := h.AlbumRepo.ReadAllAlbums()
+	albums, err := h.AlbumRepo.ReadAll()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get all albums")
 		c.JSON(http.StatusInternalServerError, types.Error{
