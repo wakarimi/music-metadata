@@ -87,12 +87,13 @@ func (h *MusicHandler) Scan(c *gin.Context, httpServerConfig *config.HttpServer)
 			}
 			albumId = &album.AlbumId
 		} else {
-			*albumId, err = h.AlbumRepo.Create(models.Album{
+			newAlbumId, err := h.AlbumRepo.Create(models.Album{
 				Title: metadata.Album(),
 			})
 			if err != nil {
 				continue
 			}
+			albumId = &newAlbumId
 		}
 
 		var artistId *int
@@ -107,12 +108,13 @@ func (h *MusicHandler) Scan(c *gin.Context, httpServerConfig *config.HttpServer)
 			}
 			artistId = &artist.ArtistId
 		} else {
-			*artistId, err = h.ArtistRepo.Create(models.Artist{
+			newArtistId, err := h.ArtistRepo.Create(models.Artist{
 				Name: metadata.Artist(),
 			})
 			if err != nil {
 				continue
 			}
+			artistId = &newArtistId
 		}
 
 		var genreId *int
@@ -127,26 +129,27 @@ func (h *MusicHandler) Scan(c *gin.Context, httpServerConfig *config.HttpServer)
 			}
 			genreId = &genre.GenreId
 		} else {
-			*genreId, err = h.GenreRepo.Create(models.Genre{
+			newGenreId, err := h.GenreRepo.Create(models.Genre{
 				Name: metadata.Genre(),
 			})
 			if err != nil {
 				continue
 			}
+			genreId = &newGenreId
 		}
 
-		trackMetadataExisted, err := h.TrackRepo.IsTrackMetadataExistsByTrackId(track.TrackId)
+		trackMetadataExisted, err := h.TrackRepo.IsExistsByTrackId(track.TrackId)
 		if err != nil {
 			log.Error().Err(err).Int("trackId", track.TrackId).Msg("Failed to check track metadata existence")
 			continue
 		}
 		if trackMetadataExisted {
-			trackMetadata, err := h.TrackRepo.ReadTrackMetadataByTrackId(track.TrackId)
+			trackMetadata, err := h.TrackRepo.ReadByTrackId(track.TrackId)
 			if err != nil {
 				log.Error().Err(err).Int("trackId", track.TrackId).Msg("Failed to get track metadata")
 				continue
 			}
-			err = h.TrackRepo.UpdateTrackMetadata(trackMetadata.TrackMetadataId, models.TrackMetadata{
+			err = h.TrackRepo.Update(trackMetadata.TrackMetadataId, models.TrackMetadata{
 				Title:      utils.StringToPointer(metadata.Title()),
 				ArtistId:   artistId,
 				AlbumId:    albumId,
@@ -160,7 +163,7 @@ func (h *MusicHandler) Scan(c *gin.Context, httpServerConfig *config.HttpServer)
 				continue
 			}
 		} else {
-			_, err = h.TrackRepo.CreateTrackMetadata(models.TrackMetadata{
+			_, err = h.TrackRepo.Create(models.TrackMetadata{
 				TrackId:    track.TrackId,
 				Title:      utils.StringToPointer(metadata.Title()),
 				ArtistId:   artistId,

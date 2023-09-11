@@ -6,7 +6,8 @@ import (
 )
 
 type Queryer interface {
-	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
+	Get(dest interface{}, query string, args ...interface{}) error
 	NamedExec(query string, arg interface{}) (sql.Result, error)
+	NamedQuery(query string, arg interface{}) (*sqlx.Rows, error)
 	Queryx(query string, arg ...interface{}) (*sqlx.Rows, error)
 }
