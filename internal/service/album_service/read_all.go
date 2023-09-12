@@ -65,48 +65,82 @@ func (s *Service) ReadAll(ctx *context.AppContext) (albums []albumReadAll, err e
 }
 
 func getMostCommonCoverId(ctx *context.AppContext, trackMetadataList []models.TrackMetadata) (mostCommonCoverId int, err error) {
-	coverCounts := make(map[int]int)
-	for _, trackMetadata := range trackMetadataList {
-		resp, err := http.Get(ctx.Config.HttpServer.MusicFilesAddress + "/api/music-files-service/tracks/" + strconv.Itoa(trackMetadata.TrackId))
-		if err != nil {
-			log.Error().Err(err).Int("trackId", trackMetadata.TrackId).Msg("Failed to fetch track")
-			return 0, err
-		}
-		defer resp.Body.Close()
-
-		if resp.StatusCode != http.StatusOK {
-			log.Error().Err(err).Int("trackId", trackMetadata.TrackId).Str("status", resp.Status).Msg("Failed to fetch track")
-			return 0, err
-		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			log.Error().Err(err).Int("trackId", trackMetadata.TrackId).Msg("Failed to read response body for track")
-			return 0, err
-		}
-
-		var trackResponse music_files_responses.TrackGet
-		err = json.Unmarshal(body, &trackResponse)
-		if err != nil {
-			log.Error().Err(err).Int("trackId", trackMetadata.TrackId).Msg("Failed to deserialize response body for track")
-			return 0, err
-		}
-
-		coverCounts[trackResponse.CoverId]++
+	coverCounts, err := countCovers(trackMetadataList, ctx)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to count covers counts")
 	}
 
-	mostCommonCoverId = 0
+	mostCommonCoverId, err = mostCommonCover(coverCounts)
+	if err != nil {
+		log.Debug().Err(err).Msg("Failed to find most common cover")
+		return 0, err
+	}
+
+	return mostCommonCoverId, nil
+}
+
+func countCovers(trackMetadataList []models.TrackMetadata, ctx *context.AppContext) (coverCounts map[int]int, err error) {
+	coverCounts = make(map[int]int)
+
+	for _, trackMetadata := range trackMetadataList {
+		trackResponse, err := fetchTrack(ctx, trackMetadata.TrackId)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to fetch track from music_files service")
+			return nil, err
+		}
+
+		if trackResponse.CoverId != nil {
+			coverId := *trackResponse.CoverId
+			coverCounts[coverId]++
+		}
+	}
+
+	return coverCounts, nil
+}
+
+func mostCommonCover(coverCounts map[int]int) (mostCommonCoverId int, err error) {
+	if len(coverCounts) == 0 {
+		err = fmt.Errorf("attempt to find the maximum among 0 covers")
+		log.Debug().Err(err).Msg("Attempt to find the maximum among 0 covers")
+		return 0, err
+	}
+
 	maxCount := 0
+
 	for coverId, count := range coverCounts {
 		if count > maxCount {
 			maxCount = count
 			mostCommonCoverId = coverId
 		}
 	}
-	if mostCommonCoverId == 0 {
-		err := fmt.Errorf("covers not found")
-		log.Debug().Err(err).Msg("Covers not found")
-		return 0, err
-	}
+
 	return mostCommonCoverId, nil
+}
+
+func fetchTrack(ctx *context.AppContext, trackId int) (track music_files_responses.TrackGet, err error) {
+	resp, err := http.Get(ctx.Config.HttpServer.MusicFilesAddress + "/api/music-files-service/tracks/" + strconv.Itoa(trackId))
+	if err != nil {
+		log.Error().Err(err).Int("trackId", trackId).Msg("Failed to fetch track")
+		return music_files_responses.TrackGet{}, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		log.Error().Err(err).Int("trackId", trackId).Str("status", resp.Status).Msg("Failed to fetch track")
+		return music_files_responses.TrackGet{}, err
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Error().Err(err).Int("trackId", trackId).Msg("Failed to read response body for track")
+		return music_files_responses.TrackGet{}, err
+	}
+
+	err = json.Unmarshal(body, &track)
+	if err != nil {
+		log.Error().Err(err).Int("trackId", trackId).Msg("Failed to deserialize response body for track")
+		return music_files_responses.TrackGet{}, err
+	}
+
+	return track, nil
 }

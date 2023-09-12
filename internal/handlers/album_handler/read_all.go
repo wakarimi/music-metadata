@@ -48,15 +48,15 @@ func (h *Handler) ReadAll(ginCtx *gin.Context, appCtx *context.AppContext) {
 		return
 	}
 
-	albumsResponse := make([]readAllResponseItem, 0)
-	for _, album := range albums {
+	albumsResponse := make([]readAllResponseItem, len(albums))
+	for i, album := range albums {
 		albumResponse := readAllResponseItem{
 			AlbumId:     album.AlbumId,
 			Title:       album.Title,
 			CoverId:     album.CoverId,
 			TracksCount: album.TracksCount,
 		}
-		albumsResponse = append(albumsResponse, albumResponse)
+		albumsResponse[i] = albumResponse
 	}
 
 	log.Debug().Int("count", len(albumsResponse)).Msg("All albums fetched successfully")
