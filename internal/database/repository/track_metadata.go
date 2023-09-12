@@ -106,6 +106,7 @@ func (r TrackMetadataRepository) read(queryer Queryer, trackMetadataId int) (tra
 		log.Error().Err(err).Int("id", trackMetadataId).Msg("Failed to fetch track metadata")
 		return models.TrackMetadata{}, err
 	}
+	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.StructScan(&trackMetadata); err != nil {
@@ -146,6 +147,7 @@ func (r TrackMetadataRepository) readByTrackId(queryer Queryer, trackId int) (tr
 		log.Error().Err(err).Int("trackId", trackId).Msg("Failed to fetch track metadata")
 		return models.TrackMetadata{}, err
 	}
+	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.StructScan(&trackMetadata); err != nil {

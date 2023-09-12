@@ -1,0 +1,17 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "title": "Wakarimi Music Metadata API",
+        "contact": {
+            "name": "Dmitry Kolesnikov (Zalimannard)"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "0.1.2"
+    },
+    "host": "localhost:8023",
+    "basePath": "/api/music-metadata-service",
+    "paths": {}
+}

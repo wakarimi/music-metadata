@@ -92,6 +92,7 @@ func (r *GenreRepository) read(queryer Queryer, genreId int) (genre models.Genre
 		log.Error().Err(err).Int("id", genreId).Msg("Failed to fetch genre")
 		return models.Genre{}, err
 	}
+	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.StructScan(&genre); err != nil {
@@ -132,6 +133,7 @@ func (r *GenreRepository) readByName(queryer Queryer, name string) (genre models
 		log.Error().Err(err).Str("name", name).Msg("Failed to fetch genre")
 		return models.Genre{}, err
 	}
+	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.StructScan(&genre); err != nil {

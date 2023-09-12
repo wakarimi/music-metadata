@@ -1,0 +1,12 @@
+basePath: /api/music-metadata-service
+host: localhost:8023
+info:
+  contact:
+    name: Dmitry Kolesnikov (Zalimannard)
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: Wakarimi Music Metadata API
+  version: 0.1.2
+paths: {}
+swagger: "2.0"

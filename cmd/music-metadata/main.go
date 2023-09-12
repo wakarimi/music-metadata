@@ -7,19 +7,40 @@ import (
 	"github.com/rs/zerolog/log"
 	"music-metadata/api"
 	"music-metadata/internal/config"
+	"music-metadata/internal/context"
 	"music-metadata/internal/database"
 	"os"
+
+	_ "music-metadata/docs"
 )
 
+// @title Wakarimi Music Metadata API
+// @version 0.1.2
+
+// @contact.name Dmitry Kolesnikov (Zalimannard)
+// @contact.email
+
+// @license.name MIT
+// @license.url https://opensource.org/licenses/MIT
+
+// @host localhost:8023
+// @BasePath /api/music-metadata-service
 func main() {
 	cfg := loadConfiguration()
-	initializeLogger(cfg.Logger.Level)
+
+	logger := initializeLogger(cfg.Logger.Level)
 
 	db := initializeDatabase(cfg.Database.ConnectionString)
 	defer closeDatabase(db)
 	initializeMigrations(db)
 
-	server := initializeServer(&cfg.HttpServer, db)
+	ctx := context.AppContext{
+		Config: cfg,
+		Db:     db,
+		Logger: logger,
+	}
+
+	server := initializeServer(&ctx)
 	runServer(server, cfg.HttpServer.Port)
 }
 
@@ -32,12 +53,13 @@ func loadConfiguration() *config.Configuration {
 	return cfg
 }
 
-func initializeLogger(level zerolog.Level) {
+func initializeLogger(level zerolog.Level) (logger *zerolog.Logger) {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout}).
 		With().Caller().Logger().
 		With().Str("service", "music-metadata").Logger().
 		Level(level)
 	log.Debug().Msg("Logger initialized")
+	return &log.Logger
 }
 
 func initializeDatabase(connectionString string) (db *sqlx.DB) {
@@ -63,8 +85,8 @@ func initializeMigrations(db *sqlx.DB) {
 	log.Debug().Msg("Data schema actualized")
 }
 
-func initializeServer(httpServerConfig *config.HttpServer, db *sqlx.DB) *gin.Engine {
-	r := api.SetupRouter(httpServerConfig, db)
+func initializeServer(ctx *context.AppContext) (r *gin.Engine) {
+	r = api.SetupRouter(ctx)
 	log.Debug().Msg("Router initialized")
 	return r
 }

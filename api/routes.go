@@ -2,42 +2,50 @@ package api
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
-	"music-metadata/internal/config"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	"music-metadata/internal/context"
 	"music-metadata/internal/database/repository"
 	"music-metadata/internal/handlers/album_handler"
 	"music-metadata/internal/handlers/artist"
 	"music-metadata/internal/handlers/genre"
 	"music-metadata/internal/handlers/track_metadata"
 	"music-metadata/internal/middleware"
+	"music-metadata/internal/service"
 	"music-metadata/internal/service/album_service"
 )
 
-func SetupRouter(httpServerConfig *config.HttpServer, db *sqlx.DB) *gin.Engine {
+func SetupRouter(ctx *context.AppContext) (r *gin.Engine) {
 	log.Debug().Msg("Router setup")
 	gin.SetMode(gin.ReleaseMode)
 
-	albumRepo := repository.NewAlbumRepository(db)
-	artistRepo := repository.NewArtistRepository(db)
-	genreRepo := repository.NewGenreRepository(db)
-	trackMetadataRepo := repository.NewTrackMetadataRepository(db)
+	txManager := service.NewTransactionManager(*ctx.Db)
 
-	albumService := album_service.NewService(albumRepo)
+	albumRepo := repository.NewAlbumRepository(ctx.Db)
+	artistRepo := repository.NewArtistRepository(ctx.Db)
+	genreRepo := repository.NewGenreRepository(ctx.Db)
+	trackMetadataRepo := repository.NewTrackMetadataRepository(ctx.Db)
+
+	albumService := album_service.NewService(txManager, albumRepo, trackMetadataRepo)
 
 	albumHandler := album_handler.NewHandler(*albumService)
 	artistHandler := artist.NewArtistHandler(artistRepo)
 	genreHandler := genre.NewGenreHandler(genreRepo)
 	musicHandler := track_metadata.NewMusicHandler(albumRepo, artistRepo, genreRepo, trackMetadataRepo)
 
-	r := gin.New()
+	r = gin.New()
 	r.Use(middleware.ZerologMiddleware(log.Logger))
 
 	api := r.Group("/api/music-metadata-service")
 	{
+		api.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 		albums := api.Group("/albums")
 		{
-			albums.GET("/", albumHandler.ReadAll)
+			albums.GET("/", func(c *gin.Context) {
+				albumHandler.ReadAll(c, ctx)
+			})
 		}
 		artists := api.Group("/artists")
 		{
@@ -48,8 +56,9 @@ func SetupRouter(httpServerConfig *config.HttpServer, db *sqlx.DB) *gin.Engine {
 			genres.GET("/", genreHandler.GetAll)
 		}
 
-		api.POST("/scan", func(c *gin.Context) { musicHandler.Scan(c, httpServerConfig) })
+		api.POST("/scan", func(c *gin.Context) { musicHandler.Scan(c, &ctx.Config.HttpServer) })
 	}
 
+	log.Debug().Msg("Router setup successfully")
 	return r
 }

@@ -1,22 +1,28 @@
 package service
 
 import (
-	"database/sql"
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 )
 
 type TransactionManager struct {
-	db *sql.DB
+	db *sqlx.DB
 }
 
-func (tm *TransactionManager) Begin() (tx *sql.Tx, err error) {
+func NewTransactionManager(db sqlx.DB) (txManager TransactionManager) {
+	return TransactionManager{
+		db: &db,
+	}
+}
+
+func (tm *TransactionManager) begin() (tx *sqlx.Tx, err error) {
 	log.Debug().Msg("Starting a new transaction")
-	tx, err = tm.db.Begin()
+	tx, err = tm.db.Beginx()
 	return tx, err
 }
 
-func (tm *TransactionManager) WithTransaction(do func(tx *sql.Tx) error) (err error) {
-	tx, err := tm.Begin()
+func (tm *TransactionManager) WithTransaction(do func(tx *sqlx.Tx) (err error)) (err error) {
+	tx, err := tm.begin()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to start a transaction")
 		return err

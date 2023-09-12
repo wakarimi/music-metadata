@@ -92,6 +92,7 @@ func (r *AlbumRepository) read(queryer Queryer, albumId int) (album models.Album
 		log.Error().Err(err).Int("id", albumId).Msg("Failed to fetch album")
 		return models.Album{}, err
 	}
+	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.StructScan(&album); err != nil {
@@ -132,6 +133,7 @@ func (r *AlbumRepository) readByTitle(queryer Queryer, title string) (album mode
 		log.Error().Err(err).Str("title", title).Msg("Failed to fetch album")
 		return models.Album{}, err
 	}
+	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.StructScan(&album); err != nil {
@@ -218,7 +220,7 @@ func (r *AlbumRepository) IsExistsByTitle(title string) (exists bool, err error)
 
 func (r *AlbumRepository) IsExistsByTitleTx(tx *sqlx.Tx, title string) (exists bool, err error) {
 	log.Debug().Str("title", title).Msg("Checking if album exists by title transactional")
-	return r.isExistsByTitle(r.Db, title)
+	return r.isExistsByTitle(tx, title)
 }
 
 func (r *AlbumRepository) isExistsByTitle(queryer Queryer, title string) (exists bool, err error) {

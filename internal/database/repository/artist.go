@@ -92,6 +92,7 @@ func (r *ArtistRepository) read(queryer Queryer, artistId int) (artist models.Ar
 		log.Error().Err(err).Int("id", artistId).Msg("Failed to fetch artist")
 		return models.Artist{}, err
 	}
+	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.StructScan(&artist); err != nil {
@@ -132,6 +133,7 @@ func (r *ArtistRepository) readByName(queryer Queryer, name string) (artist mode
 		log.Error().Err(err).Str("name", name).Msg("Failed to fetch artist")
 		return models.Artist{}, err
 	}
+	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.StructScan(&artist); err != nil {
