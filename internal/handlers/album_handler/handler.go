@@ -1,14 +1,14 @@
 package album_handler
 
 import (
-	"music-metadata/internal/service/album_service"
+	"music-metadata/internal/service/albumservice"
 )
 
 type Handler struct {
-	AlbumService album_service.Service
+	AlbumService albumservice.Service
 }
 
-func NewHandler(albumService album_service.Service) *Handler {
+func NewHandler(albumService albumservice.Service) *Handler {
 	return &Handler{
 		albumService,
 	}

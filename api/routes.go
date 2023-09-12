@@ -5,6 +5,8 @@ import (
 	"github.com/rs/zerolog/log"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"music-metadata/internal/clients/musicfilesclient"
+	"music-metadata/internal/clients/musicfilesclient/trackrequests"
 	"music-metadata/internal/context"
 	"music-metadata/internal/database/repository"
 	"music-metadata/internal/handlers/album_handler"
@@ -13,12 +15,15 @@ import (
 	"music-metadata/internal/handlers/track_metadata"
 	"music-metadata/internal/middleware"
 	"music-metadata/internal/service"
-	"music-metadata/internal/service/album_service"
+	"music-metadata/internal/service/albumservice"
 )
 
 func SetupRouter(ctx *context.AppContext) (r *gin.Engine) {
 	log.Debug().Msg("Router setup")
 	gin.SetMode(gin.ReleaseMode)
+
+	musicFilesClient := musicfilesclient.NewClient(ctx.Config.HttpServer.MusicFilesAddress)
+	trackClient := trackrequests.NewTrackClient(musicFilesClient)
 
 	txManager := service.NewTransactionManager(*ctx.Db)
 
@@ -27,7 +32,7 @@ func SetupRouter(ctx *context.AppContext) (r *gin.Engine) {
 	genreRepo := repository.NewGenreRepository(ctx.Db)
 	trackMetadataRepo := repository.NewTrackMetadataRepository(ctx.Db)
 
-	albumService := album_service.NewService(txManager, albumRepo, trackMetadataRepo)
+	albumService := albumservice.NewService(txManager, albumRepo, trackMetadataRepo, trackClient)
 
 	albumHandler := album_handler.NewHandler(*albumService)
 	artistHandler := artist.NewArtistHandler(artistRepo)
@@ -43,9 +48,7 @@ func SetupRouter(ctx *context.AppContext) (r *gin.Engine) {
 
 		albums := api.Group("/albums")
 		{
-			albums.GET("/", func(c *gin.Context) {
-				albumHandler.ReadAll(c, ctx)
-			})
+			albums.GET("/", func(c *gin.Context) { albumHandler.ReadAll(c, ctx) })
 		}
 		artists := api.Group("/artists")
 		{
