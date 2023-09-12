@@ -1,4 +1,33 @@
 basePath: /api/music-metadata-service
+definitions:
+  album_handler.readAllResponse:
+    description: List of all albums
+    properties:
+      albums:
+        items:
+          $ref: '#/definitions/album_handler.readAllResponseItem'
+        type: array
+    type: object
+  album_handler.readAllResponseItem:
+    description: Album details
+    properties:
+      albumId:
+        type: integer
+      coverId:
+        type: integer
+      title:
+        type: string
+      tracksCount:
+        type: integer
+    type: object
+  types.Error:
+    description: Response structure for error messages
+    properties:
+      error:
+        type: string
+    required:
+    - error
+    type: object
 host: localhost:8023
 info:
   contact:
@@ -8,5 +37,23 @@ info:
     url: https://opensource.org/licenses/MIT
   title: Wakarimi Music Metadata API
   version: 0.1.2
-paths: {}
+paths:
+  /albums:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/album_handler.readAllResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/types.Error'
+      summary: Get all albums
+      tags:
+      - albums
 swagger: "2.0"

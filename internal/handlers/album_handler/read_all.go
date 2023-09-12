@@ -8,6 +8,12 @@ import (
 	"net/http"
 )
 
+// readAllResponseItem godoc
+// @Description Album details
+// @Property AlbumId (integer) The unique identifier of the album
+// @Property Title (string) Title of the album
+// @Property CoverId (integer, optional) Identifier of the album cover
+// @Property TracksCount (integer) Number of tracks in the album
 type readAllResponseItem struct {
 	AlbumId     int    `json:"albumId"`
 	Title       string `json:"title"`
@@ -15,10 +21,21 @@ type readAllResponseItem struct {
 	TracksCount int    `json:"tracksCount"`
 }
 
+// readAllResponse godoc
+// @Description List of all albums
+// @Property Albums (array) List of album details
 type readAllResponse struct {
 	Albums []readAllResponseItem `json:"albums"`
 }
 
+// ReadAll godoc
+// @Summary Get all albums
+// @Tags albums
+// @Accept json
+// @Produce json
+// @Success 200 {object} readAllResponse
+// @Failure 500 {object} types.Error
+// @Router /albums [get]
 func (h *Handler) ReadAll(ginCtx *gin.Context, appCtx *context.AppContext) {
 	log.Debug().Msg("Fetching all albums")
 
