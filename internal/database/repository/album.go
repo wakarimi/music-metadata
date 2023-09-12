@@ -159,8 +159,6 @@ func (r *AlbumRepository) ReadAllTx(tx *sqlx.Tx) (albums []models.Album, err err
 }
 
 func (r *AlbumRepository) readAll(queryer Queryer) (albums []models.Album, err error) {
-	log.Debug().Msg("Fetching all albums")
-
 	query := `
 		SELECT *
 		FROM albums
@@ -196,8 +194,6 @@ func (r *AlbumRepository) DeleteTx(tx *sqlx.Tx, albumId int) (err error) {
 }
 
 func (r *AlbumRepository) delete(queryer Queryer, albumId int) (err error) {
-	log.Debug().Int("id", albumId).Msg("Deleting album")
-
 	query := `
 		DELETE FROM albums
 		WHERE album_id = :album_id
