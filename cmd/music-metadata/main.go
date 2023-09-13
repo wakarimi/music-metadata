@@ -15,7 +15,7 @@ import (
 )
 
 // @title Wakarimi Music Metadata API
-// @version 0.1.2
+// @version 0.2
 
 // @contact.name Dmitry Kolesnikov (Zalimannard)
 // @contact.email
@@ -28,7 +28,7 @@ import (
 func main() {
 	cfg := loadConfiguration()
 
-	logger := initializeLogger(cfg.Logger.Level)
+	initializeLogger(cfg.Logger.Level)
 
 	db := initializeDatabase(cfg.Database.ConnectionString)
 	defer closeDatabase(db)
@@ -37,7 +37,6 @@ func main() {
 	ctx := context.AppContext{
 		Config: cfg,
 		Db:     db,
-		Logger: logger,
 	}
 
 	server := initializeServer(&ctx)

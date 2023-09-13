@@ -3,7 +3,6 @@ package album_handler
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
-	"music-metadata/internal/context"
 	"music-metadata/internal/handlers/types"
 	"net/http"
 )
@@ -17,7 +16,7 @@ import (
 type readAllResponseItem struct {
 	AlbumId     int    `json:"albumId"`
 	Title       string `json:"title"`
-	CoverId     *int   `json:"coverId"`
+	CoverId     *int   `json:"coverId,omitempty"`
 	TracksCount int    `json:"tracksCount"`
 }
 
@@ -36,10 +35,10 @@ type readAllResponse struct {
 // @Success 200 {object} readAllResponse
 // @Failure 500 {object} types.Error
 // @Router /albums [get]
-func (h *Handler) ReadAll(ginCtx *gin.Context, appCtx *context.AppContext) {
+func (h *Handler) ReadAll(ginCtx *gin.Context) {
 	log.Debug().Msg("Fetching all albums")
 
-	albums, err := h.AlbumService.ReadAll(appCtx)
+	albums, err := h.AlbumService.ReadAll()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to fetch all albums")
 		ginCtx.JSON(http.StatusInternalServerError, types.Error{

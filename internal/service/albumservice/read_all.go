@@ -8,10 +8,10 @@ import (
 )
 
 type albumReadAll struct {
-	AlbumId     int    `json:"albumId"`
-	Title       string `json:"title"`
-	CoverId     *int   `json:"coverId"`
-	TracksCount int    `json:"tracksCount"`
+	AlbumId     int
+	Title       string
+	CoverId     *int
+	TracksCount int
 }
 
 func (s *Service) ReadAll() (albums []albumReadAll, err error) {
@@ -59,9 +59,12 @@ func (s *Service) ReadAll() (albums []albumReadAll, err error) {
 }
 
 func (s *Service) getMostCommonCoverId(trackMetadataList []models.TrackMetadata) (mostCommonCoverId int, err error) {
+	log.Debug().Int("numberOfTracks", len(trackMetadataList)).Msg("Finding the most common cover")
+
 	coverCounts, err := s.countCovers(trackMetadataList)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to count covers counts")
+		return 0, err
 	}
 
 	mostCommonCoverId, err = s.mostCommonCover(coverCounts)
@@ -70,16 +73,19 @@ func (s *Service) getMostCommonCoverId(trackMetadataList []models.TrackMetadata)
 		return 0, err
 	}
 
+	log.Debug().Int("mostCommonCoverId", mostCommonCoverId).Msg("Most common cover id found successfully")
 	return mostCommonCoverId, nil
 }
 
 func (s *Service) countCovers(trackMetadataList []models.TrackMetadata) (coverCounts map[int]int, err error) {
+	log.Debug().Msg("Counting cover encounters")
+
 	coverCounts = make(map[int]int)
 
 	for _, trackMetadata := range trackMetadataList {
-		trackResponse, err := s.TrackRequests.GetTrackById(trackMetadata.TrackId)
+		trackResponse, err := s.TrackRequests.GetById(trackMetadata.TrackId)
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to fetch track from music_files service")
+			log.Error().Err(err).Msg("Failed to fetch track")
 			continue
 		}
 
@@ -89,13 +95,16 @@ func (s *Service) countCovers(trackMetadataList []models.TrackMetadata) (coverCo
 		}
 	}
 
+	log.Debug().Int("numberOfDifferentCovers", len(coverCounts)).Msg("Covers counted successfully")
 	return coverCounts, nil
 }
 
 func (s *Service) mostCommonCover(coverCounts map[int]int) (mostCommonCoverId int, err error) {
+	log.Debug().Int("numberOfDifferentCovers", len(coverCounts)).Msg("Finding most common cover")
+
 	if len(coverCounts) == 0 {
-		err = fmt.Errorf("attempt to find the maximum among 0 covers")
-		log.Debug().Err(err).Msg("Attempt to find the maximum among 0 covers")
+		err = fmt.Errorf("attempt to find the most common among 0 covers")
+		log.Debug().Err(err).Msg("Attempt to find the most common among 0 covers")
 		return 0, err
 	}
 
@@ -108,5 +117,6 @@ func (s *Service) mostCommonCover(coverCounts map[int]int) (mostCommonCoverId in
 		}
 	}
 
+	log.Debug().Int("coverId", mostCommonCoverId).Msg("Most common cover found successfully")
 	return mostCommonCoverId, nil
 }

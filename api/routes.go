@@ -18,19 +18,19 @@ import (
 	"music-metadata/internal/service/albumservice"
 )
 
-func SetupRouter(ctx *context.AppContext) (r *gin.Engine) {
+func SetupRouter(appCtx *context.AppContext) (r *gin.Engine) {
 	log.Debug().Msg("Router setup")
 	gin.SetMode(gin.ReleaseMode)
 
-	musicFilesClient := musicfilesclient.NewClient(ctx.Config.HttpServer.MusicFilesAddress)
+	musicFilesClient := musicfilesclient.NewClient(appCtx.Config.HttpServer.MusicFilesAddress)
 	trackClient := trackrequests.NewTrackClient(musicFilesClient)
 
-	txManager := service.NewTransactionManager(*ctx.Db)
+	txManager := service.NewTransactionManager(*appCtx.Db)
 
-	albumRepo := repository.NewAlbumRepository(ctx.Db)
-	artistRepo := repository.NewArtistRepository(ctx.Db)
-	genreRepo := repository.NewGenreRepository(ctx.Db)
-	trackMetadataRepo := repository.NewTrackMetadataRepository(ctx.Db)
+	albumRepo := repository.NewAlbumRepository(appCtx.Db)
+	artistRepo := repository.NewArtistRepository(appCtx.Db)
+	genreRepo := repository.NewGenreRepository(appCtx.Db)
+	trackMetadataRepo := repository.NewTrackMetadataRepository(appCtx.Db)
 
 	albumService := albumservice.NewService(txManager, albumRepo, trackMetadataRepo, trackClient)
 
@@ -48,7 +48,7 @@ func SetupRouter(ctx *context.AppContext) (r *gin.Engine) {
 
 		albums := api.Group("/albums")
 		{
-			albums.GET("/", func(c *gin.Context) { albumHandler.ReadAll(c, ctx) })
+			albums.GET("/", albumHandler.ReadAll)
 		}
 		artists := api.Group("/artists")
 		{
@@ -59,7 +59,7 @@ func SetupRouter(ctx *context.AppContext) (r *gin.Engine) {
 			genres.GET("/", genreHandler.GetAll)
 		}
 
-		api.POST("/scan", func(c *gin.Context) { musicHandler.Scan(c, &ctx.Config.HttpServer) })
+		api.POST("/scan", func(c *gin.Context) { musicHandler.Scan(c, &appCtx.Config.HttpServer) })
 	}
 
 	log.Debug().Msg("Router setup successfully")
