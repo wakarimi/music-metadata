@@ -15,7 +15,8 @@ import (
 	"music-metadata/internal/handlers/track_metadata"
 	"music-metadata/internal/middleware"
 	"music-metadata/internal/service"
-	"music-metadata/internal/service/albumservice"
+	"music-metadata/internal/service/album_service"
+	"music-metadata/internal/service/track_metadata_service"
 )
 
 func SetupRouter(appCtx *context.AppContext) (r *gin.Engine) {
@@ -32,9 +33,10 @@ func SetupRouter(appCtx *context.AppContext) (r *gin.Engine) {
 	genreRepo := repository.NewGenreRepository(appCtx.Db)
 	trackMetadataRepo := repository.NewTrackMetadataRepository(appCtx.Db)
 
-	albumService := albumservice.NewService(txManager, albumRepo, trackMetadataRepo, trackClient)
+	albumService := album_service.NewService(albumRepo, trackMetadataRepo, trackClient)
+	trackMetadataService := track_metadata_service.NewService(txManager, trackMetadataRepo)
 
-	albumHandler := album_handler.NewHandler(*albumService)
+	albumHandler := album_handler.NewHandler(txManager, *albumService, *trackMetadataService)
 	artistHandler := artist.NewArtistHandler(artistRepo)
 	genreHandler := genre.NewGenreHandler(genreRepo)
 	musicHandler := track_metadata.NewMusicHandler(albumRepo, artistRepo, genreRepo, trackMetadataRepo)
@@ -49,6 +51,7 @@ func SetupRouter(appCtx *context.AppContext) (r *gin.Engine) {
 		albums := api.Group("/albums")
 		{
 			albums.GET("/", albumHandler.ReadAll)
+			albums.GET("/:albumId", albumHandler.Read)
 		}
 		artists := api.Group("/artists")
 		{

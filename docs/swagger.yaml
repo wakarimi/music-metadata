@@ -20,6 +20,46 @@ definitions:
       tracksCount:
         type: integer
     type: object
+  album_handler.readResponse:
+    description: Detailed information about an album and its tracks
+    properties:
+      albumId:
+        type: integer
+      coverId:
+        type: integer
+      title:
+        type: string
+      trackMetadataList:
+        items:
+          $ref: '#/definitions/album_handler.readResponseTrack'
+        type: array
+      tracksCount:
+        type: integer
+    type: object
+  album_handler.readResponseTrack:
+    description: Track metadata details
+    properties:
+      albumId:
+        type: integer
+      artistId:
+        type: integer
+      bitrate:
+        type: integer
+      channels:
+        type: integer
+      duration:
+        type: integer
+      genreId:
+        type: integer
+      sampleRate:
+        type: integer
+      title:
+        type: string
+      trackId:
+        type: integer
+      trackMetadataId:
+        type: integer
+    type: object
   types.Error:
     description: Response structure for error messages
     properties:
@@ -36,7 +76,7 @@ info:
     name: MIT
     url: https://opensource.org/licenses/MIT
   title: Wakarimi Music Metadata API
-  version: 0.1.2
+  version: "0.2"
 paths:
   /albums:
     get:
@@ -50,10 +90,38 @@ paths:
           schema:
             $ref: '#/definitions/album_handler.readAllResponse'
         "500":
-          description: Internal Server Error
+          description: Failed to fetch all album
           schema:
             $ref: '#/definitions/types.Error'
       summary: Get all albums
+      tags:
+      - albums
+  /albums/{albumId}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Album Identifier
+        in: path
+        name: albumId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/album_handler.readResponse'
+        "400":
+          description: Invalid albumId format
+          schema:
+            $ref: '#/definitions/types.Error'
+        "500":
+          description: Failed to fetch album with details
+          schema:
+            $ref: '#/definitions/types.Error'
+      summary: Get detailed information about an album and its tracks by album id
       tags:
       - albums
 swagger: "2.0"

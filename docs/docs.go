@@ -41,7 +41,50 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Failed to fetch all album",
+                        "schema": {
+                            "$ref": "#/definitions/types.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/albums/{albumId}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "albums"
+                ],
+                "summary": "Get detailed information about an album and its tracks by album id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Album Identifier",
+                        "name": "albumId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/album_handler.readResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid albumId format",
+                        "schema": {
+                            "$ref": "#/definitions/types.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch album with details",
                         "schema": {
                             "$ref": "#/definitions/types.Error"
                         }
@@ -81,6 +124,66 @@ const docTemplate = `{
                 }
             }
         },
+        "album_handler.readResponse": {
+            "description": "Detailed information about an album and its tracks",
+            "type": "object",
+            "properties": {
+                "albumId": {
+                    "type": "integer"
+                },
+                "coverId": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "trackMetadataList": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/album_handler.readResponseTrack"
+                    }
+                },
+                "tracksCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "album_handler.readResponseTrack": {
+            "description": "Track metadata details",
+            "type": "object",
+            "properties": {
+                "albumId": {
+                    "type": "integer"
+                },
+                "artistId": {
+                    "type": "integer"
+                },
+                "bitrate": {
+                    "type": "integer"
+                },
+                "channels": {
+                    "type": "integer"
+                },
+                "duration": {
+                    "type": "integer"
+                },
+                "genreId": {
+                    "type": "integer"
+                },
+                "sampleRate": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "trackId": {
+                    "type": "integer"
+                },
+                "trackMetadataId": {
+                    "type": "integer"
+                }
+            }
+        },
         "types.Error": {
             "description": "Response structure for error messages",
             "type": "object",
@@ -98,7 +201,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.1.2",
+	Version:          "0.2",
 	Host:             "localhost:8023",
 	BasePath:         "/api/music-metadata-service",
 	Schemes:          []string{},

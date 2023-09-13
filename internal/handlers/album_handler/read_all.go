@@ -2,8 +2,10 @@ package album_handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 	"music-metadata/internal/handlers/types"
+	"music-metadata/internal/service/album_service"
 	"net/http"
 )
 
@@ -33,16 +35,25 @@ type readAllResponse struct {
 // @Accept json
 // @Produce json
 // @Success 200 {object} readAllResponse
-// @Failure 500 {object} types.Error
+// @Failure 500 {object} types.Error "Failed to fetch all album"
 // @Router /albums [get]
-func (h *Handler) ReadAll(ginCtx *gin.Context) {
+func (h *Handler) ReadAll(c *gin.Context) {
 	log.Debug().Msg("Fetching all albums")
 
-	albums, err := h.AlbumService.ReadAll()
+	var albums []album_service.AlbumReadAll
+
+	err := h.TransactionManager.WithTransaction(func(tx *sqlx.Tx) (err error) {
+		albums, err = h.AlbumService.ReadAll(tx)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to fetch all albums")
+			return err
+		}
+		return err
+	})
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to fetch all albums")
-		ginCtx.JSON(http.StatusInternalServerError, types.Error{
-			Error: "Failed to fetch all albums",
+		c.JSON(http.StatusInternalServerError, types.Error{
+			Error: "Failed to fetch all album",
 		})
 		return
 	}
@@ -59,7 +70,7 @@ func (h *Handler) ReadAll(ginCtx *gin.Context) {
 	}
 
 	log.Debug().Int("count", len(albumsResponse)).Msg("All albums fetched successfully")
-	ginCtx.JSON(http.StatusOK, readAllResponse{
+	c.JSON(http.StatusOK, readAllResponse{
 		Albums: albumsResponse,
 	})
 }
