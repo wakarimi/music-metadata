@@ -1,4 +1,4 @@
-package musicfilesclient
+package music_files_client
 
 import (
 	"github.com/rs/zerolog/log"

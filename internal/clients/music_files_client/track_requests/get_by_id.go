@@ -1,4 +1,4 @@
-package trackrequests
+package track_requests
 
 import (
 	"encoding/json"

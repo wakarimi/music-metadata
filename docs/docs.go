@@ -203,7 +203,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "0.2",
 	Host:             "localhost:8023",
-	BasePath:         "/api/music-metadata-service",
+	BasePath:         "/api/music_metadata-service",
 	Schemes:          []string{},
 	Title:            "Wakarimi Music Metadata API",
 	Description:      "",

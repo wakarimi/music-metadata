@@ -15,16 +15,16 @@ import (
 )
 
 // @title Wakarimi Music Metadata API
-// @version 0.2
+// @version 0.3
 
 // @contact.name Dmitry Kolesnikov (Zalimannard)
-// @contact.email
+// @contact.email zalimannard@mail.ru
 
 // @license.name MIT
 // @license.url https://opensource.org/licenses/MIT
 
 // @host localhost:8023
-// @BasePath /api/music-metadata-service
+// @BasePath /api/music_metadata-service
 func main() {
 	cfg := loadConfiguration()
 
@@ -55,7 +55,7 @@ func loadConfiguration() *config.Configuration {
 func initializeLogger(level zerolog.Level) (logger *zerolog.Logger) {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout}).
 		With().Caller().Logger().
-		With().Str("service", "music-metadata").Logger().
+		With().Str("service", "music_metadata").Logger().
 		Level(level)
 	log.Debug().Msg("Logger initialized")
 	return &log.Logger

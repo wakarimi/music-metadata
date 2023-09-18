@@ -5,8 +5,8 @@ import (
 	"github.com/rs/zerolog/log"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"music-metadata/internal/clients/musicfilesclient"
-	"music-metadata/internal/clients/musicfilesclient/trackrequests"
+	"music-metadata/internal/clients/music_files_client"
+	"music-metadata/internal/clients/music_files_client/track_requests"
 	"music-metadata/internal/context"
 	"music-metadata/internal/database/repository"
 	"music-metadata/internal/handlers/album_handler"
@@ -23,8 +23,8 @@ func SetupRouter(appCtx *context.AppContext) (r *gin.Engine) {
 	log.Debug().Msg("Router setup")
 	gin.SetMode(gin.ReleaseMode)
 
-	musicFilesClient := musicfilesclient.NewClient(appCtx.Config.HttpServer.MusicFilesAddress)
-	trackClient := trackrequests.NewTrackClient(musicFilesClient)
+	musicFilesClient := music_files_client.NewClient(appCtx.Config.HttpServer.MusicFilesAddress)
+	trackClient := track_requests.NewTrackClient(musicFilesClient)
 
 	txManager := service.NewTransactionManager(*appCtx.Db)
 
