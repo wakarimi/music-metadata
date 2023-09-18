@@ -11,19 +11,17 @@ import (
 	"music-metadata/internal/config"
 	"music-metadata/internal/handlers/types"
 	"music-metadata/internal/models"
-	"music-metadata/internal/utils"
 	"net/http"
+	"strings"
 )
 
 type ScanTrack struct {
-	TrackId   int    `json:"trackId"`
-	DirId     int    `json:"dirId"`
-	CoverId   int    `json:"coverId"`
-	Path      string `json:"path"`
-	Name      string `json:"name"`
-	Size      int    `json:"size"`
-	Format    string `json:"format"`
-	DateAdded string `json:"dateAdded"`
+	TrackId    int    `json:"trackId"`
+	CoverId    *int   `json:"coverId,omitempty"`
+	DurationMs int64  `json:"durationMs"`
+	AudioCodec string `json:"audioCodec"`
+	SizeByte   int64  `json:"sizeByte"`
+	HashSha256 string `json:"hashSha256"`
 }
 
 type ScanTracksContent struct {
@@ -75,69 +73,6 @@ func (h *MusicHandler) Scan(c *gin.Context, httpServerConfig *config.HttpServer)
 			continue
 		}
 
-		var albumId *int
-		albumExists, err := h.AlbumRepo.IsExistsByTitle(metadata.Album())
-		if err != nil {
-			continue
-		}
-		if albumExists {
-			album, err := h.AlbumRepo.ReadByTitle(metadata.Album())
-			if err != nil {
-				continue
-			}
-			albumId = &album.AlbumId
-		} else {
-			newAlbumId, err := h.AlbumRepo.Create(models.Album{
-				Title: metadata.Album(),
-			})
-			if err != nil {
-				continue
-			}
-			albumId = &newAlbumId
-		}
-
-		var artistId *int
-		artistExists, err := h.ArtistRepo.IsExistsByName(metadata.Artist())
-		if err != nil {
-			continue
-		}
-		if artistExists {
-			artist, err := h.ArtistRepo.ReadByName(metadata.Artist())
-			if err != nil {
-				continue
-			}
-			artistId = &artist.ArtistId
-		} else {
-			newArtistId, err := h.ArtistRepo.Create(models.Artist{
-				Name: metadata.Artist(),
-			})
-			if err != nil {
-				continue
-			}
-			artistId = &newArtistId
-		}
-
-		var genreId *int
-		genreExists, err := h.GenreRepo.IsExistsByName(metadata.Genre())
-		if err != nil {
-			continue
-		}
-		if genreExists {
-			genre, err := h.GenreRepo.ReadByName(metadata.Genre())
-			if err != nil {
-				continue
-			}
-			genreId = &genre.GenreId
-		} else {
-			newGenreId, err := h.GenreRepo.Create(models.Genre{
-				Name: metadata.Genre(),
-			})
-			if err != nil {
-				continue
-			}
-			genreId = &newGenreId
-		}
-
 		trackMetadataExisted, err := h.TrackRepo.IsExistsByTrackId(track.TrackId)
 		if err != nil {
 			log.Error().Err(err).Int("trackId", track.TrackId).Msg("Failed to check track metadata existence")
@@ -150,29 +85,32 @@ func (h *MusicHandler) Scan(c *gin.Context, httpServerConfig *config.HttpServer)
 				continue
 			}
 			err = h.TrackRepo.Update(trackMetadata.TrackMetadataId, models.TrackMetadata{
-				Title:      utils.StringToPointer(metadata.Title()),
-				ArtistId:   artistId,
-				AlbumId:    albumId,
-				Genre:      genreId,
-				Bitrate:    nil,
-				Channels:   nil,
-				SampleRate: nil,
-				Duration:   nil,
+				TrackId:     track.TrackId,
+				Title:       h.getTitle(metadata),
+				AlbumId:     h.getOrCreateAlbum(metadata),
+				ArtistId:    h.getOrCreateArtist(metadata),
+				GenreId:     h.getOrCreateGenre(metadata),
+				Year:        h.getYear(metadata),
+				TrackNumber: h.getTrackNumber(metadata),
+				DiscNumber:  h.getDiscNumber(metadata),
+				Lyrics:      h.getLyrics(metadata),
+				HashSha256:  track.HashSha256,
 			})
 			if err != nil {
 				continue
 			}
 		} else {
 			_, err = h.TrackRepo.Create(models.TrackMetadata{
-				TrackId:    track.TrackId,
-				Title:      utils.StringToPointer(metadata.Title()),
-				ArtistId:   artistId,
-				AlbumId:    albumId,
-				Genre:      genreId,
-				Bitrate:    nil,
-				Channels:   nil,
-				SampleRate: nil,
-				Duration:   nil,
+				TrackId:     track.TrackId,
+				Title:       h.getTitle(metadata),
+				AlbumId:     h.getOrCreateAlbum(metadata),
+				ArtistId:    h.getOrCreateArtist(metadata),
+				GenreId:     h.getOrCreateGenre(metadata),
+				Year:        h.getYear(metadata),
+				TrackNumber: h.getTrackNumber(metadata),
+				DiscNumber:  h.getDiscNumber(metadata),
+				Lyrics:      h.getLyrics(metadata),
+				HashSha256:  track.HashSha256,
 			})
 			if err != nil {
 				continue
@@ -201,4 +139,144 @@ func downloadTrack(baseURL string, trackId int) ([]byte, error) {
 func extractMetadata(trackData []byte) (metadata tag.Metadata, err error) {
 	r := bytes.NewReader(trackData)
 	return tag.ReadFrom(r)
+}
+
+func (h *MusicHandler) getTitle(metadata tag.Metadata) *string {
+	title := strings.TrimSpace(metadata.Title())
+
+	if len(title) == 0 {
+		return nil
+	}
+
+	return &title
+}
+
+func (h *MusicHandler) getYear(metadata tag.Metadata) *int {
+	year := metadata.Year()
+
+	if year == 0 {
+		return nil
+	}
+
+	return &year
+}
+
+func (h *MusicHandler) getTrackNumber(metadata tag.Metadata) *int {
+	trackNumber, _ := metadata.Track()
+
+	if trackNumber == 0 {
+		return nil
+	}
+
+	return &trackNumber
+}
+
+func (h *MusicHandler) getDiscNumber(metadata tag.Metadata) *int {
+	discNumber, _ := metadata.Disc()
+
+	if discNumber == 0 {
+		return nil
+	}
+
+	return &discNumber
+}
+
+func (h *MusicHandler) getLyrics(metadata tag.Metadata) *string {
+	lyrics := strings.TrimSpace(metadata.Lyrics())
+
+	if len(lyrics) == 0 {
+		return nil
+	}
+
+	return &lyrics
+}
+
+func (h *MusicHandler) getOrCreateAlbum(metadata tag.Metadata) (albumId *int) {
+	title := strings.TrimSpace(metadata.Album())
+
+	if len(title) == 0 {
+		return nil
+	}
+
+	albumExists, err := h.AlbumRepo.IsExistsByTitle(title)
+	if err != nil {
+		return nil
+	}
+
+	if albumExists {
+		album, err := h.AlbumRepo.ReadByTitle(title)
+		if err != nil {
+			return nil
+		}
+		albumId = &album.AlbumId
+	} else {
+		newAlbumId, err := h.AlbumRepo.Create(models.Album{
+			Title: title,
+		})
+		if err != nil {
+			return nil
+		}
+		albumId = &newAlbumId
+	}
+	return albumId
+}
+
+func (h *MusicHandler) getOrCreateArtist(metadata tag.Metadata) (artistId *int) {
+	name := strings.TrimSpace(metadata.Artist())
+
+	if len(name) == 0 {
+		return nil
+	}
+
+	artistExists, err := h.ArtistRepo.IsExistsByName(name)
+	if err != nil {
+		return nil
+	}
+
+	if artistExists {
+		artist, err := h.ArtistRepo.ReadByName(name)
+		if err != nil {
+			return nil
+		}
+		artistId = &artist.ArtistId
+	} else {
+		newArtistId, err := h.ArtistRepo.Create(models.Artist{
+			Name: name,
+		})
+		if err != nil {
+			return nil
+		}
+		artistId = &newArtistId
+	}
+	return artistId
+}
+
+func (h *MusicHandler) getOrCreateGenre(metadata tag.Metadata) (genreId *int) {
+	name := strings.TrimSpace(metadata.Genre())
+
+	if len(name) == 0 {
+		return nil
+	}
+
+	genreExists, err := h.GenreRepo.IsExistsByName(name)
+	if err != nil {
+		return nil
+	}
+
+	if genreExists {
+		genre, err := h.GenreRepo.ReadByName(name)
+		if err != nil {
+			return nil
+		}
+		genreId = &genre.GenreId
+	} else {
+		newGenreId, err := h.GenreRepo.Create(models.Genre{
+			Name: name,
+		})
+		if err != nil {
+			return nil
+		}
+		genreId = &newGenreId
+	}
+	return genreId
 }

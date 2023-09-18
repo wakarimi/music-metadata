@@ -11,11 +11,11 @@ type TrackMetadataReadByAlbumId struct {
 	Title           *string
 	ArtistId        *int
 	AlbumId         *int
-	Genre           *int
-	Bitrate         *int
-	Channels        *int
-	SampleRate      *int
-	Duration        *int
+	GenreId         *int
+	Year            *int
+	TrackNumber     *int
+	DiscNumber      *int
+	Lyrics          *string
 }
 
 func (s *Service) ReadByAlbumId(tx *sqlx.Tx, albumId int) (trackMetadataList []TrackMetadataReadByAlbumId, err error) {
@@ -35,11 +35,11 @@ func (s *Service) ReadByAlbumId(tx *sqlx.Tx, albumId int) (trackMetadataList []T
 			Title:           trackMetadataModel.Title,
 			ArtistId:        trackMetadataModel.ArtistId,
 			AlbumId:         trackMetadataModel.AlbumId,
-			Genre:           trackMetadataModel.Genre,
-			Bitrate:         trackMetadataModel.Bitrate,
-			Channels:        trackMetadataModel.Channels,
-			SampleRate:      trackMetadataModel.SampleRate,
-			Duration:        trackMetadataModel.Duration,
+			GenreId:         trackMetadataModel.GenreId,
+			Year:            trackMetadataModel.Year,
+			TrackNumber:     trackMetadataModel.TrackNumber,
+			DiscNumber:      trackMetadataModel.DiscNumber,
+			Lyrics:          trackMetadataModel.Lyrics,
 		}
 	}
 

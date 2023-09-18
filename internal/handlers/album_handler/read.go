@@ -11,38 +11,18 @@ import (
 	"strconv"
 )
 
-// readResponseTrack godoc
-// @Description Track metadata details
-// @Property TrackMetadataId (integer) The unique identifier of the track metadata
-// @Property TrackId (integer) The unique identifier of the track
-// @Property Title (string, optional) Title of the track
-// @Property ArtistId (integer, optional) The unique identifier of the artist
-// @Property AlbumId (integer, optional) The unique identifier of the album
-// @Property Genre (integer, optional) The unique identifier of the genre
-// @Property Bitrate (integer, optional) Bitrate of the track
-// @Property Channels (integer, optional) Number of channels in the track
-// @Property SampleRate (integer, optional) Sample rate of the track
-// @Property Duration (integer, optional) Duration of the track in milliseconds
 type readResponseTrack struct {
 	TrackMetadataId int     `json:"trackMetadataId"`
 	TrackId         int     `json:"trackId"`
 	Title           *string `json:"title"`
-	ArtistId        *int    `json:"artistId"`
 	AlbumId         *int    `json:"albumId"`
-	Genre           *int    `json:"genreId"`
-	Bitrate         *int    `json:"bitrate"`
-	Channels        *int    `json:"channels"`
-	SampleRate      *int    `json:"sampleRate"`
-	Duration        *int    `json:"duration"`
+	ArtistId        *int    `json:"artistId"`
+	GenreId         *int    `json:"genreId"`
+	Year            *int    `json:"year"`
+	TrackNumber     *int    `json:"trackNumber"`
+	DiscNumber      *int    `json:"discNumber"`
 }
 
-// readResponse godoc
-// @Description Detailed information about an album and its tracks
-// @Property AlbumId (integer) The unique identifier of the album
-// @Property Title (string) Title of the album
-// @Property CoverId (integer, optional) Identifier of the album cover
-// @Property TracksCount (integer) Number of tracks in the album
-// @Property TrackMetadataList (array) List of track metadata details
 type readResponse struct {
 	AlbumId           int                 `json:"albumId"`
 	Title             string              `json:"title"`
@@ -111,15 +91,14 @@ func (h *Handler) Read(c *gin.Context) {
 	for i, trackMetadata := range trackMetadataList {
 		trackMetadataListResponse[i] = readResponseTrack{
 			TrackMetadataId: trackMetadata.TrackMetadataId,
-			TrackId:         trackMetadata.TrackId,
+			TrackId:         trackMetadata.TrackMetadataId,
 			Title:           trackMetadata.Title,
-			ArtistId:        trackMetadata.ArtistId,
 			AlbumId:         trackMetadata.AlbumId,
-			Genre:           trackMetadata.Genre,
-			Bitrate:         trackMetadata.Bitrate,
-			Channels:        trackMetadata.Channels,
-			SampleRate:      trackMetadata.SampleRate,
-			Duration:        trackMetadata.Duration,
+			ArtistId:        trackMetadata.ArtistId,
+			GenreId:         trackMetadata.GenreId,
+			Year:            trackMetadata.Year,
+			TrackNumber:     trackMetadata.TrackNumber,
+			DiscNumber:      trackMetadata.DiscNumber,
 		}
 	}
 

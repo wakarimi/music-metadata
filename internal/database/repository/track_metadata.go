@@ -56,8 +56,8 @@ func (r TrackMetadataRepository) CreateTx(tx *sqlx.Tx, trackMetadata models.Trac
 
 func (r TrackMetadataRepository) create(queryer Queryer, trackMetadata models.TrackMetadata) (trackMetadataId int, err error) {
 	const query = `
-		INSERT INTO track_metadata(track_id, title, artist_id, album_id, genre_id, bitrate, channels, sample_rate, duration)
-		VALUES (:track_id, :title, :artist_id, :album_id, :genre_id, :bitrate, :channels, :sample_rate, :duration)
+		INSERT INTO track_metadata(track_id, title, album_id, artist_id, genre_id, year, track_number, disc_number, lyrics, hash_sha_256)
+		VALUES (:track_id, :title, :album_id, :artist_id, :genre_id, :year, :track_number, :disc_number, :lyrics, :hash_sha_256)
 		RETURNING track_metadata_id
 	`
 	rows, err := queryer.NamedQuery(query, trackMetadata)
@@ -329,14 +329,9 @@ func (r TrackMetadataRepository) UpdateTx(tx *sqlx.Tx, trackMetadataId int, trac
 func (r TrackMetadataRepository) update(queryer Queryer, trackMetadataId int, trackMetadata models.TrackMetadata) error {
 	const query = `
 		UPDATE track_metadata
-		SET title = :title,
-			artist_id = :artist_id,
-			album_id = :album_id,
-			genre_id = :genre_id,
-			bitrate = :bitrate,
-			channels = :channels,
-			sample_rate = :sample_rate,
-			duration = :duration
+		SET track_id = :track_id, title = :title, album_id = :album_id, artist_id = :artist_id, genre_id = :genre_id, 
+		    year = :year, track_number = :track_number, disc_number = :disc_number, lyrics = :lyrics,
+		    hash_sha_256 = :hash_sha_256
 		WHERE track_metadata_id = :track_metadata_id
 	`
 	trackMetadata.TrackMetadataId = trackMetadataId
