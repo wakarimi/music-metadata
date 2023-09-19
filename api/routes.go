@@ -16,6 +16,7 @@ import (
 	"music-metadata/internal/middleware"
 	"music-metadata/internal/service"
 	"music-metadata/internal/service/album_service"
+	"music-metadata/internal/service/cover_service"
 	"music-metadata/internal/service/track_metadata_service"
 )
 
@@ -35,8 +36,9 @@ func SetupRouter(appCtx *context.AppContext) (r *gin.Engine) {
 
 	albumService := album_service.NewService(albumRepo, trackMetadataRepo, trackClient)
 	trackMetadataService := track_metadata_service.NewService(txManager, trackMetadataRepo)
+	coverService := cover_service.NewService(albumRepo, artistRepo, genreRepo, trackMetadataRepo, trackClient)
 
-	albumHandler := album_handler.NewHandler(txManager, *albumService, *trackMetadataService)
+	albumHandler := album_handler.NewHandler(txManager, *albumService, *trackMetadataService, *coverService)
 	artistHandler := artist.NewArtistHandler(artistRepo)
 	genreHandler := genre.NewGenreHandler(genreRepo)
 	musicHandler := track_metadata.NewMusicHandler(albumRepo, artistRepo, genreRepo, trackMetadataRepo)

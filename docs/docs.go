@@ -10,7 +10,8 @@ const docTemplate = `{
         "description": "{{escape .Description}}",
         "title": "{{.Title}}",
         "contact": {
-            "name": "Dmitry Kolesnikov (Zalimannard)"
+            "name": "Dmitry Kolesnikov (Zalimannard)",
+            "email": "zalimannard@mail.ru"
         },
         "license": {
             "name": "MIT",
@@ -30,7 +31,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "albums"
+                    "Albums"
                 ],
                 "summary": "Get all albums",
                 "responses": {
@@ -58,7 +59,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "albums"
+                    "Albums"
                 ],
                 "summary": "Get detailed information about an album and its tracks by album id",
                 "parameters": [
@@ -125,7 +126,7 @@ const docTemplate = `{
             }
         },
         "album_handler.readResponse": {
-            "description": "Detailed information about an album and its tracks",
+            "description": "Response structure containing detailed information about an album and its tracks.",
             "type": "object",
             "properties": {
                 "albumId": {
@@ -149,7 +150,7 @@ const docTemplate = `{
             }
         },
         "album_handler.readResponseTrack": {
-            "description": "Track metadata details",
+            "description": "Response structure containing details about a track.",
             "type": "object",
             "properties": {
                 "albumId": {
@@ -158,19 +159,10 @@ const docTemplate = `{
                 "artistId": {
                     "type": "integer"
                 },
-                "bitrate": {
-                    "type": "integer"
-                },
-                "channels": {
-                    "type": "integer"
-                },
-                "duration": {
+                "discNumber": {
                     "type": "integer"
                 },
                 "genreId": {
-                    "type": "integer"
-                },
-                "sampleRate": {
                     "type": "integer"
                 },
                 "title": {
@@ -180,6 +172,12 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "trackMetadataId": {
+                    "type": "integer"
+                },
+                "trackNumber": {
+                    "type": "integer"
+                },
+                "year": {
                     "type": "integer"
                 }
             }
@@ -201,7 +199,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.2",
+	Version:          "0.3",
 	Host:             "localhost:8023",
 	BasePath:         "/api/music_metadata-service",
 	Schemes:          []string{},

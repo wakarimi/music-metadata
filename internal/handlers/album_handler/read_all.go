@@ -5,7 +5,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 	"music-metadata/internal/handlers/types"
-	"music-metadata/internal/service/album_service"
+	"music-metadata/internal/models"
 	"net/http"
 )
 
@@ -31,7 +31,7 @@ type readAllResponse struct {
 
 // ReadAll godoc
 // @Summary Get all albums
-// @Tags albums
+// @Tags Albums
 // @Accept json
 // @Produce json
 // @Success 200 {object} readAllResponse
@@ -40,15 +40,35 @@ type readAllResponse struct {
 func (h *Handler) ReadAll(c *gin.Context) {
 	log.Debug().Msg("Fetching all albums")
 
-	var albums []album_service.AlbumReadAll
+	var albums []models.Album
+	var coverIds []*int
+	var tracksCounts []int
 
 	err := h.TransactionManager.WithTransaction(func(tx *sqlx.Tx) (err error) {
 		albums, err = h.AlbumService.ReadAll(tx)
 		if err != nil {
-			log.Error().Err(err).Msg("Failed to fetch all albums")
 			return err
 		}
-		return err
+
+		for _, album := range albums {
+			coverId, err := h.CoverService.GetMostCommonCoverIdByAlbumId(tx, album.AlbumId)
+			if err != nil {
+				coverId = nil
+			}
+			coverIds = append(coverIds, coverId)
+
+			var tracksCount int
+			trackMetadataList, err := h.TrackMetadataService.ReadByAlbumId(tx, album.AlbumId)
+			if err != nil {
+				tracksCount = 0
+			} else {
+				tracksCount = len(trackMetadataList)
+			}
+
+			tracksCounts = append(tracksCounts, tracksCount)
+		}
+
+		return nil
 	})
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to fetch all albums")
@@ -63,8 +83,8 @@ func (h *Handler) ReadAll(c *gin.Context) {
 		albumResponse := readAllResponseItem{
 			AlbumId:     album.AlbumId,
 			Title:       album.Title,
-			CoverId:     album.CoverId,
-			TracksCount: album.TracksCount,
+			CoverId:     coverIds[i],
+			TracksCount: tracksCounts[i],
 		}
 		albumsResponse[i] = albumResponse
 	}

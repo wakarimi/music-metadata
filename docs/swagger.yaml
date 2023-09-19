@@ -1,4 +1,4 @@
-basePath: /api/music-metadata-service
+basePath: /api/music_metadata-service
 definitions:
   album_handler.readAllResponse:
     description: List of all albums
@@ -21,7 +21,8 @@ definitions:
         type: integer
     type: object
   album_handler.readResponse:
-    description: Detailed information about an album and its tracks
+    description: Response structure containing detailed information about an album
+      and its tracks.
     properties:
       albumId:
         type: integer
@@ -37,27 +38,25 @@ definitions:
         type: integer
     type: object
   album_handler.readResponseTrack:
-    description: Track metadata details
+    description: Response structure containing details about a track.
     properties:
       albumId:
         type: integer
       artistId:
         type: integer
-      bitrate:
-        type: integer
-      channels:
-        type: integer
-      duration:
+      discNumber:
         type: integer
       genreId:
-        type: integer
-      sampleRate:
         type: integer
       title:
         type: string
       trackId:
         type: integer
       trackMetadataId:
+        type: integer
+      trackNumber:
+        type: integer
+      year:
         type: integer
     type: object
   types.Error:
@@ -71,12 +70,13 @@ definitions:
 host: localhost:8023
 info:
   contact:
+    email: zalimannard@mail.ru
     name: Dmitry Kolesnikov (Zalimannard)
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
   title: Wakarimi Music Metadata API
-  version: "0.2"
+  version: "0.3"
 paths:
   /albums:
     get:
@@ -95,7 +95,7 @@ paths:
             $ref: '#/definitions/types.Error'
       summary: Get all albums
       tags:
-      - albums
+      - Albums
   /albums/{albumId}:
     get:
       consumes:
@@ -123,5 +123,5 @@ paths:
             $ref: '#/definitions/types.Error'
       summary: Get detailed information about an album and its tracks by album id
       tags:
-      - albums
+      - Albums
 swagger: "2.0"

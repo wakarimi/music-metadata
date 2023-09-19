@@ -5,12 +5,23 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 	"music-metadata/internal/handlers/types"
-	"music-metadata/internal/service/album_service"
+	"music-metadata/internal/models"
 	"music-metadata/internal/service/track_metadata_service"
 	"net/http"
 	"strconv"
 )
 
+// readResponseTrack godoc
+// @Description Response structure containing details about a track.
+// @Property TrackMetadataId (integer) Unique identifier for the track metadata.
+// @Property TrackId (integer) Unique identifier for the track.
+// @Property Title (string, optional) Title of the track.
+// @Property AlbumId (integer, optional) Identifier for the associated album.
+// @Property ArtistId (integer, optional) Identifier for the associated artist.
+// @Property GenreId (integer, optional) Identifier for the genre.
+// @Property Year (integer, optional) Year of release.
+// @Property TrackNumber (integer, optional) The track's position in the album.
+// @Property DiscNumber (integer, optional) The disc number for multi-disc albums.
 type readResponseTrack struct {
 	TrackMetadataId int     `json:"trackMetadataId"`
 	TrackId         int     `json:"trackId"`
@@ -23,6 +34,13 @@ type readResponseTrack struct {
 	DiscNumber      *int    `json:"discNumber"`
 }
 
+// readResponse godoc
+// @Description Response structure containing detailed information about an album and its tracks.
+// @Property AlbumId (integer) Unique identifier for the album.
+// @Property Title (string) Title of the album.
+// @Property CoverId (integer, optional) Identifier for the album's cover.
+// @Property TracksCount (integer) Number of tracks in the album.
+// @Property TrackMetadataList (array) List of track metadata for the album.
 type readResponse struct {
 	AlbumId           int                 `json:"albumId"`
 	Title             string              `json:"title"`
@@ -33,7 +51,7 @@ type readResponse struct {
 
 // Read godoc
 // @Summary Get detailed information about an album and its tracks by album id
-// @Tags albums
+// @Tags Albums
 // @Accept json
 // @Produce json
 // @Param albumId path integer true "Album Identifier"
@@ -42,12 +60,12 @@ type readResponse struct {
 // @Failure 500 {object} types.Error "Failed to fetch album with details"
 // @Router /albums/{albumId} [get]
 func (h *Handler) Read(c *gin.Context) {
-	log.Debug().Msg("Fetching album with ditails")
+	log.Debug().Msg("Fetching album with details")
 
 	albumIdStr := c.Param("albumId")
 	albumId, err := strconv.Atoi(albumIdStr)
 	if err != nil {
-		log.Error().Err(err).Msg("Invalid albumId format")
+		log.Error().Err(err).Str("albumIdStr", albumIdStr).Msg("Invalid albumId format")
 		c.JSON(http.StatusBadRequest, types.Error{
 			Error: "Invalid albumId format",
 		})
@@ -55,26 +73,24 @@ func (h *Handler) Read(c *gin.Context) {
 	}
 	log.Debug().Int("albumId", albumId).Msg("Url parameter read successfully")
 
-	var album album_service.AlbumRead
+	var album models.Album
 	var trackMetadataList []track_metadata_service.TrackMetadataReadByAlbumId
+	var coverId *int
 
-	h.TransactionManager.WithTransaction(func(tx *sqlx.Tx) (err error) {
+	err = h.TransactionManager.WithTransaction(func(tx *sqlx.Tx) (err error) {
 		album, err = h.AlbumService.Read(tx, albumId)
 		if err != nil {
-			log.Error().Err(err).Int("albumId", albumId).Msg("Failed to fetch album")
-			c.JSON(http.StatusInternalServerError, types.Error{
-				Error: "Failed to fetch album",
-			})
 			return err
 		}
 
 		trackMetadataList, err = h.TrackMetadataService.ReadByAlbumId(tx, album.AlbumId)
 		if err != nil {
-			log.Error().Err(err).Int("albumId", albumId).Msg("Failed to fetch album's tracks")
-			c.JSON(http.StatusInternalServerError, types.Error{
-				Error: "Failed to fetch album's tracks",
-			})
 			return err
+		}
+
+		coverId, err = h.CoverService.GetMostCommonCoverIdByAlbumId(tx, albumId)
+		if err != nil {
+			coverId = nil
 		}
 
 		return nil
@@ -105,11 +121,11 @@ func (h *Handler) Read(c *gin.Context) {
 	response := readResponse{
 		AlbumId:           album.AlbumId,
 		Title:             album.Title,
-		CoverId:           album.CoverId,
-		TracksCount:       album.TracksCount,
+		CoverId:           coverId,
+		TracksCount:       len(trackMetadataList),
 		TrackMetadataList: trackMetadataListResponse,
 	}
 
-	log.Debug().Int("albumId", albumId).Msg("Album fetched successfully")
+	log.Debug().Int("albumId", albumId).Int("tracksCount", len(trackMetadataList)).Msg("Album fetched successfully")
 	c.JSON(http.StatusOK, response)
 }

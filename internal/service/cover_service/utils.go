@@ -1,4 +1,4 @@
-package album_service
+package cover_service
 
 import (
 	"fmt"

@@ -3,16 +3,17 @@
     "info": {
         "title": "Wakarimi Music Metadata API",
         "contact": {
-            "name": "Dmitry Kolesnikov (Zalimannard)"
+            "name": "Dmitry Kolesnikov (Zalimannard)",
+            "email": "zalimannard@mail.ru"
         },
         "license": {
             "name": "MIT",
             "url": "https://opensource.org/licenses/MIT"
         },
-        "version": "0.2"
+        "version": "0.3"
     },
     "host": "localhost:8023",
-    "basePath": "/api/music-metadata-service",
+    "basePath": "/api/music_metadata-service",
     "paths": {
         "/albums": {
             "get": {
@@ -23,7 +24,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "albums"
+                    "Albums"
                 ],
                 "summary": "Get all albums",
                 "responses": {
@@ -51,7 +52,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "albums"
+                    "Albums"
                 ],
                 "summary": "Get detailed information about an album and its tracks by album id",
                 "parameters": [
@@ -118,7 +119,7 @@
             }
         },
         "album_handler.readResponse": {
-            "description": "Detailed information about an album and its tracks",
+            "description": "Response structure containing detailed information about an album and its tracks.",
             "type": "object",
             "properties": {
                 "albumId": {
@@ -142,7 +143,7 @@
             }
         },
         "album_handler.readResponseTrack": {
-            "description": "Track metadata details",
+            "description": "Response structure containing details about a track.",
             "type": "object",
             "properties": {
                 "albumId": {
@@ -151,19 +152,10 @@
                 "artistId": {
                     "type": "integer"
                 },
-                "bitrate": {
-                    "type": "integer"
-                },
-                "channels": {
-                    "type": "integer"
-                },
-                "duration": {
+                "discNumber": {
                     "type": "integer"
                 },
                 "genreId": {
-                    "type": "integer"
-                },
-                "sampleRate": {
                     "type": "integer"
                 },
                 "title": {
@@ -173,6 +165,12 @@
                     "type": "integer"
                 },
                 "trackMetadataId": {
+                    "type": "integer"
+                },
+                "trackNumber": {
+                    "type": "integer"
+                },
+                "year": {
                     "type": "integer"
                 }
             }
