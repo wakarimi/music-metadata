@@ -1,4 +1,4 @@
-package album_handler
+package artist_handler
 
 import (
 	"github.com/gin-gonic/gin"
@@ -34,76 +34,73 @@ type readResponseTrack struct {
 	DiscNumber      *int    `json:"discNumber"`
 }
 
-// readResponse godoc
-// @Description Response structure containing detailed information about an album and its tracks.
-// @Property AlbumId (integer) Unique identifier for the album.
-// @Property Title (string) Title of the album.
-// @Property CoverId (integer, optional) Identifier for the album's cover.
-// @Property TracksCount (integer) Number of tracks in the album.
-// @Property TrackMetadataList (array) List of track metadata for the album.
-type readResponse struct {
-	AlbumId           int                 `json:"albumId"`
-	Title             string              `json:"title"`
-	CoverId           *int                `json:"coverId,omitempty"`
-	TracksCount       int                 `json:"tracksCount"`
-	TrackMetadataList []readResponseTrack `json:"trackMetadataList"`
+// readResponseArtist godoc
+// @Description Response structure containing detailed information about an artist and his tracks.
+// @Property ArtistId (integer) Unique identifier for the artist.
+// @Property Name (string) Name of the artist.
+// @Property MostPopularCoverId (integer, optional) Identifier for the artist's most popular cover.
+// @Property TracksCount (integer) Number of tracks performed by the artist.
+// @Property TrackMetadataList (array) List of track metadata for the artist.
+type readResponseArtist struct {
+	ArtistId            int                 `json:"artistId"`
+	Name                string              `json:"name"`
+	MostPopularCoverIds []int               `json:"mostPopularCoverIds,omitempty"`
+	TracksCount         int                 `json:"tracksCount"`
+	TrackMetadataList   []readResponseTrack `json:"trackMetadataList"`
 }
 
-// Read godoc
-// @Summary Get detailed information about an album and its tracks by album id
-// @Tags Albums
+// ReadArtist godoc
+// @Summary Get detailed information about an artist and his tracks by artist id
+// @Tags Artists
 // @Accept json
 // @Produce json
-// @Param albumId path integer true "Album Identifier"
-// @Success 200 {object} readResponse
-// @Failure 400 {object} types.Error "Invalid albumId format"
-// @Failure 500 {object} types.Error "Failed to fetch album with details"
-// @Router /albums/{albumId} [get]
+// @Param artistId path integer true "Artist Identifier"
+// @Success 200 {object} readResponseArtist
+// @Failure 400 {object} types.Error "Invalid artistId format"
+// @Failure 500 {object} types.Error "Failed to fetch artist with details"
+// @Router /artists/{artistId} [get]
 func (h *Handler) Read(c *gin.Context) {
-	log.Debug().Msg("Fetching album with details")
+	log.Debug().Msg("Fetching artist with details")
 
-	albumIdStr := c.Param("albumId")
-	albumId, err := strconv.Atoi(albumIdStr)
+	artistIdStr := c.Param("artistId")
+	artistId, err := strconv.Atoi(artistIdStr)
 	if err != nil {
-		log.Error().Err(err).Str("albumIdStr", albumIdStr).Msg("Invalid albumId format")
+		log.Error().Err(err).Str("artistIdStr", artistIdStr).Msg("Invalid artistId format")
 		c.JSON(http.StatusBadRequest, types.Error{
-			Error: "Invalid albumId format",
+			Error: "Invalid artistId format",
 		})
 		return
 	}
-	log.Debug().Int("albumId", albumId).Msg("Url parameter read successfully")
 
-	var album models.Album
-	var trackMetadataList []track_metadata_service.TrackMetadataReadByAlbumId
-	var coverId *int
+	var artist models.Artist
+	var trackMetadataList []track_metadata_service.TrackMetadataReadByArtistId
+	var mostPopularCoverIds []int
 
 	err = h.TransactionManager.WithTransaction(func(tx *sqlx.Tx) (err error) {
-		album, err = h.AlbumService.Read(tx, albumId)
+		artist, err = h.ArtistService.Read(tx, artistId)
 		if err != nil {
 			return err
 		}
 
-		trackMetadataList, err = h.TrackMetadataService.ReadByAlbumId(tx, album.AlbumId)
+		trackMetadataList, err = h.TrackMetadataService.ReadByArtistId(tx, artist.ArtistId)
 		if err != nil {
 			return err
 		}
 
-		coverIds, err := h.CoverService.GetMostCommonCoverIdsByAlbumId(tx, albumId, 1)
+		coverIds, err := h.CoverService.GetMostCommonCoverIdsByArtistId(tx, artistId, 4)
 		if err != nil {
-			coverId = nil
-			return nil
-		}
-
-		if len(coverIds) == 1 {
-			coverId = &coverIds[0]
+			mostPopularCoverIds = make([]int, 0)
+		} else {
+			mostPopularCoverIds = coverIds
 		}
 
 		return nil
 	})
+
 	if err != nil {
-		log.Error().Err(err).Int("albumId", albumId).Msg("Failed to fetch album with details")
+		log.Error().Err(err).Int("artistId", artistId).Msg("Failed to fetch artist with details")
 		c.JSON(http.StatusInternalServerError, types.Error{
-			Error: "Failed to fetch album with details",
+			Error: "Failed to fetch artist with details",
 		})
 		return
 	}
@@ -123,14 +120,14 @@ func (h *Handler) Read(c *gin.Context) {
 		}
 	}
 
-	response := readResponse{
-		AlbumId:           album.AlbumId,
-		Title:             album.Title,
-		CoverId:           coverId,
-		TracksCount:       len(trackMetadataList),
-		TrackMetadataList: trackMetadataListResponse,
+	response := readResponseArtist{
+		ArtistId:            artist.ArtistId,
+		Name:                artist.Name,
+		MostPopularCoverIds: mostPopularCoverIds,
+		TracksCount:         len(trackMetadataList),
+		TrackMetadataList:   trackMetadataListResponse,
 	}
 
-	log.Debug().Int("albumId", albumId).Int("tracksCount", len(trackMetadataList)).Msg("Album fetched successfully")
+	log.Debug().Int("artistId", artistId).Int("tracksCount", len(trackMetadataList)).Msg("Artist fetched successfully")
 	c.JSON(http.StatusOK, response)
 }

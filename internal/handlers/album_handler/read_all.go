@@ -51,11 +51,16 @@ func (h *Handler) ReadAll(c *gin.Context) {
 		}
 
 		for _, album := range albums {
-			coverId, err := h.CoverService.GetMostCommonCoverIdByAlbumId(tx, album.AlbumId)
+			coverId, err := h.CoverService.GetMostCommonCoverIdsByAlbumId(tx, album.AlbumId, 1)
 			if err != nil {
 				coverId = nil
 			}
-			coverIds = append(coverIds, coverId)
+
+			if len(coverId) == 1 {
+				coverIds = append(coverIds, &coverId[0])
+			} else {
+				coverIds = append(coverIds, nil)
+			}
 
 			var tracksCount int
 			trackMetadataList, err := h.TrackMetadataService.ReadByAlbumId(tx, album.AlbumId)

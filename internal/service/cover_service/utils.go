@@ -6,23 +6,23 @@ import (
 	"music-metadata/internal/models"
 )
 
-func (s *Service) getMostCommonCoverId(trackMetadataList []models.TrackMetadata) (mostCommonCoverId int, err error) {
-	log.Debug().Int("numberOfTracks", len(trackMetadataList)).Msg("Finding the most common cover")
+func (s *Service) getMostCommonCoverIds(trackMetadataList []models.TrackMetadata, count int) (mostCommonCoverIds []int, err error) {
+	log.Debug().Int("numberOfTracks", len(trackMetadataList)).Msg("Calculating the most common cover")
 
 	coverCounts, err := s.countCovers(trackMetadataList)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to count covers counts")
-		return 0, err
+		return make([]int, 0), err
 	}
 
-	mostCommonCoverId, err = s.mostCommonCover(coverCounts)
+	mostCommonCoverIds, err = s.mostCommonCovers(coverCounts, count)
 	if err != nil {
 		log.Debug().Err(err).Msg("Failed to find most common cover")
-		return 0, err
+		return make([]int, 0), err
 	}
 
-	log.Debug().Int("mostCommonCoverId", mostCommonCoverId).Msg("Most common cover id found successfully")
-	return mostCommonCoverId, nil
+	log.Debug().Msg("Most common cover ids calculated successfully")
+	return mostCommonCoverIds, nil
 }
 
 func (s *Service) countCovers(trackMetadataList []models.TrackMetadata) (coverCounts map[int]int, err error) {
@@ -47,24 +47,36 @@ func (s *Service) countCovers(trackMetadataList []models.TrackMetadata) (coverCo
 	return coverCounts, nil
 }
 
-func (s *Service) mostCommonCover(coverCounts map[int]int) (mostCommonCoverId int, err error) {
-	log.Debug().Int("numberOfDifferentCovers", len(coverCounts)).Msg("Finding most common cover")
+func (s *Service) mostCommonCovers(coverCounts map[int]int, n int) ([]int, error) {
+	log.Debug().Int("numberOfDifferentCovers", len(coverCounts)).Msg("Finding most common covers")
 
 	if len(coverCounts) == 0 {
-		err = fmt.Errorf("attempt to find the most common among 0 covers")
+		err := fmt.Errorf("attempt to find the most common among 0 covers")
 		log.Debug().Err(err).Msg("Attempt to find the most common among 0 covers")
-		return 0, err
+		return nil, err
 	}
 
-	maxCount := 0
+	var topCovers []int
 
-	for coverId, count := range coverCounts {
+	for i := 0; i < n && len(coverCounts) > 0; i++ {
+		maxCover := getMaxCover(coverCounts)
+		topCovers = append(topCovers, maxCover)
+		delete(coverCounts, maxCover)
+	}
+
+	return topCovers, nil
+}
+
+func getMaxCover(coverCounts map[int]int) int {
+	var maxCover int
+	maxCount := -1
+
+	for cover, count := range coverCounts {
 		if count > maxCount {
+			maxCover = cover
 			maxCount = count
-			mostCommonCoverId = coverId
 		}
 	}
 
-	log.Debug().Int("coverId", mostCommonCoverId).Msg("Most common cover found successfully")
-	return mostCommonCoverId, nil
+	return maxCover
 }

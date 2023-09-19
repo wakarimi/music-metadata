@@ -31,12 +31,12 @@ func NewArtistRepository(db *sqlx.DB) ArtistRepositoryInterface {
 }
 
 func (r *ArtistRepository) Create(artist models.Artist) (artistId int, err error) {
-	log.Debug().Str("name", artist.Name).Msg("Creating new artist")
+	log.Debug().Str("name", artist.Name).Msg("Creating new artist_handler")
 	return r.create(r.Db, artist)
 }
 
 func (r *ArtistRepository) CreateTx(tx *sqlx.Tx, artist models.Artist) (artistId int, err error) {
-	log.Debug().Str("name", artist.Name).Msg("Creating new artist transactional")
+	log.Debug().Str("name", artist.Name).Msg("Creating new artist_handler transactional")
 	return r.create(tx, artist)
 }
 
@@ -48,7 +48,7 @@ func (r *ArtistRepository) create(queryer Queryer, artist models.Artist) (artist
 	`
 	rows, err := queryer.NamedQuery(query, artist)
 	if err != nil {
-		log.Error().Err(err).Str("name", artist.Name).Msg("Failed to create artist")
+		log.Error().Err(err).Str("name", artist.Name).Msg("Failed to create artist_handler")
 		return 0, err
 	}
 	defer rows.Close()
@@ -59,8 +59,8 @@ func (r *ArtistRepository) create(queryer Queryer, artist models.Artist) (artist
 			return 0, err
 		}
 	} else {
-		err := fmt.Errorf("no id returned after artist insert")
-		log.Error().Err(err).Str("name", artist.Name).Msg("No id returned after artist insert")
+		err := fmt.Errorf("no id returned after artist_handler insert")
+		log.Error().Err(err).Str("name", artist.Name).Msg("No id returned after artist_handler insert")
 		return 0, err
 	}
 
@@ -69,12 +69,12 @@ func (r *ArtistRepository) create(queryer Queryer, artist models.Artist) (artist
 }
 
 func (r *ArtistRepository) Read(artistId int) (artist models.Artist, err error) {
-	log.Debug().Int("id", artistId).Msg("Fetching artist")
+	log.Debug().Int("id", artistId).Msg("Fetching artist_handler")
 	return r.read(r.Db, artistId)
 }
 
 func (r *ArtistRepository) ReadTx(tx *sqlx.Tx, artistId int) (artist models.Artist, err error) {
-	log.Debug().Int("id", artistId).Msg("Fetching artist transactional")
+	log.Debug().Int("id", artistId).Msg("Fetching artist_handler transactional")
 	return r.read(tx, artistId)
 }
 
@@ -89,19 +89,19 @@ func (r *ArtistRepository) read(queryer Queryer, artistId int) (artist models.Ar
 	}
 	rows, err := queryer.NamedQuery(query, args)
 	if err != nil {
-		log.Error().Err(err).Int("id", artistId).Msg("Failed to fetch artist")
+		log.Error().Err(err).Int("id", artistId).Msg("Failed to fetch artist_handler")
 		return models.Artist{}, err
 	}
 	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.StructScan(&artist); err != nil {
-			log.Error().Err(err).Int("id", artistId).Msg("Failed to scan artist into struct")
+			log.Error().Err(err).Int("id", artistId).Msg("Failed to scan artist_handler into struct")
 			return models.Artist{}, err
 		}
 	} else {
-		err := fmt.Errorf("no artist found with id: %d", artistId)
-		log.Error().Err(err).Int("id", artistId).Msg("No artist found")
+		err := fmt.Errorf("no artist_handler found with id: %d", artistId)
+		log.Error().Err(err).Int("id", artistId).Msg("No artist_handler found")
 		return models.Artist{}, err
 	}
 
@@ -110,12 +110,12 @@ func (r *ArtistRepository) read(queryer Queryer, artistId int) (artist models.Ar
 }
 
 func (r *ArtistRepository) ReadByName(name string) (artist models.Artist, err error) {
-	log.Debug().Str("name", name).Msg("Fetching artist by name")
+	log.Debug().Str("name", name).Msg("Fetching artist_handler by name")
 	return r.readByName(r.Db, name)
 }
 
 func (r *ArtistRepository) ReadByNameTx(tx *sqlx.Tx, name string) (artist models.Artist, err error) {
-	log.Debug().Str("name", name).Msg("Fetching artist by name transactional")
+	log.Debug().Str("name", name).Msg("Fetching artist_handler by name transactional")
 	return r.readByName(tx, name)
 }
 
@@ -130,19 +130,19 @@ func (r *ArtistRepository) readByName(queryer Queryer, name string) (artist mode
 	}
 	rows, err := queryer.NamedQuery(query, args)
 	if err != nil {
-		log.Error().Err(err).Str("name", name).Msg("Failed to fetch artist")
+		log.Error().Err(err).Str("name", name).Msg("Failed to fetch artist_handler")
 		return models.Artist{}, err
 	}
 	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.StructScan(&artist); err != nil {
-			log.Error().Err(err).Str("name", name).Msg("Failed to scan artist into struct")
+			log.Error().Err(err).Str("name", name).Msg("Failed to scan artist_handler into struct")
 			return models.Artist{}, err
 		}
 	} else {
-		err := fmt.Errorf("no artist found with name: %s", name)
-		log.Error().Err(err).Str("name", name).Msg("No artist found")
+		err := fmt.Errorf("no artist_handler found with name: %s", name)
+		log.Error().Err(err).Str("name", name).Msg("No artist_handler found")
 		return models.Artist{}, err
 	}
 
@@ -188,17 +188,17 @@ func (r *ArtistRepository) readAll(queryer Queryer) (artists []models.Artist, er
 }
 
 func (r *ArtistRepository) Delete(artistId int) (err error) {
-	log.Debug().Int("id", artistId).Msg("Deleting artist")
+	log.Debug().Int("id", artistId).Msg("Deleting artist_handler")
 	return r.delete(r.Db, artistId)
 }
 
 func (r *ArtistRepository) DeleteTx(tx *sqlx.Tx, artistId int) (err error) {
-	log.Debug().Int("id", artistId).Msg("Deleting artist transactional")
+	log.Debug().Int("id", artistId).Msg("Deleting artist_handler transactional")
 	return r.delete(tx, artistId)
 }
 
 func (r *ArtistRepository) delete(queryer Queryer, artistId int) (err error) {
-	log.Debug().Int("id", artistId).Msg("Deleting artist")
+	log.Debug().Int("id", artistId).Msg("Deleting artist_handler")
 
 	query := `
 		DELETE FROM artists
@@ -209,7 +209,7 @@ func (r *ArtistRepository) delete(queryer Queryer, artistId int) (err error) {
 	}
 	_, err = queryer.NamedExec(query, args)
 	if err != nil {
-		log.Error().Err(err).Int("id", artistId).Msg("Failed to delete artist")
+		log.Error().Err(err).Int("id", artistId).Msg("Failed to delete artist_handler")
 		return err
 	}
 
@@ -218,12 +218,12 @@ func (r *ArtistRepository) delete(queryer Queryer, artistId int) (err error) {
 }
 
 func (r *ArtistRepository) IsExistsByName(name string) (exists bool, err error) {
-	log.Debug().Str("name", name).Msg("Checking if artist exists by name")
+	log.Debug().Str("name", name).Msg("Checking if artist_handler exists by name")
 	return r.isExistsByName(r.Db, name)
 }
 
 func (r *ArtistRepository) IsExistsByNameTx(tx *sqlx.Tx, name string) (exists bool, err error) {
-	log.Debug().Str("name", name).Msg("Checking if artist exists by name transactional")
+	log.Debug().Str("name", name).Msg("Checking if artist_handler exists by name transactional")
 	return r.isExistsByName(r.Db, name)
 }
 
@@ -240,14 +240,14 @@ func (r *ArtistRepository) isExistsByName(queryer Queryer, name string) (exists 
 	}
 	row, err := queryer.NamedQuery(query, args)
 	if err != nil {
-		log.Error().Err(err).Str("name", name).Msg("Failed to execute query to check artist existence")
+		log.Error().Err(err).Str("name", name).Msg("Failed to execute query to check artist_handler existence")
 		return false, err
 	}
 	defer row.Close()
 
 	if row.Next() {
 		if err = row.Scan(&exists); err != nil {
-			log.Error().Err(err).Str("name", name).Msg("Failed to scan result of artist existence check")
+			log.Error().Err(err).Str("name", name).Msg("Failed to scan result of artist_handler existence check")
 			return false, err
 		}
 	}
@@ -255,7 +255,7 @@ func (r *ArtistRepository) isExistsByName(queryer Queryer, name string) (exists 
 	if exists {
 		log.Debug().Str("name", name).Msg("Artist exists")
 	} else {
-		log.Debug().Str("name", name).Msg("No artist found")
+		log.Debug().Str("name", name).Msg("No artist_handler found")
 	}
 	return exists, nil
 }

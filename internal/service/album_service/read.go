@@ -7,15 +7,10 @@ import (
 )
 
 func (s *Service) Read(tx *sqlx.Tx, albumId int) (album models.Album, err error) {
-	albumModel, err := s.AlbumRepo.ReadTx(tx, albumId)
+	album, err = s.AlbumRepo.ReadTx(tx, albumId)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to fetch album")
 		return models.Album{}, err
-	}
-
-	album = models.Album{
-		AlbumId: albumModel.AlbumId,
-		Title:   albumModel.Title,
 	}
 
 	return album, nil

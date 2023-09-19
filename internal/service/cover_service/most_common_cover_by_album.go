@@ -5,8 +5,8 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (s *Service) GetMostCommonCoverIdByAlbumId(tx *sqlx.Tx, albumId int) (*int, error) {
-	log.Debug().Int("albumId", albumId).Msg("Calculating most common coverId for album")
+func (s *Service) GetMostCommonCoverIdsByAlbumId(tx *sqlx.Tx, albumId int, n int) ([]int, error) {
+	log.Debug().Int("albumId", albumId).Msg("Calculating most common coverIds for album")
 
 	trackMetadataList, err := s.TrackMetadataRepo.ReadAllByAlbumTx(tx, albumId)
 	if err != nil {
@@ -14,12 +14,15 @@ func (s *Service) GetMostCommonCoverIdByAlbumId(tx *sqlx.Tx, albumId int) (*int,
 		return nil, err
 	}
 
-	mostCommonCoverId, err := s.getMostCommonCoverId(trackMetadataList)
+	mostCommonCoverIds, err := s.getMostCommonCoverIds(trackMetadataList, n)
 	if err != nil {
-		log.Debug().Err(err).Int("albumId", albumId).Msg("Failed to get most common coverId")
+		log.Debug().Err(err).Int("albumId", albumId).Msg("Failed to get most common coverIds")
 		return nil, err
 	}
 
-	log.Debug().Int("albumId", albumId).Int("mostCommonCoverId", mostCommonCoverId).Msg("Most common coverId for album calculated successfully")
-	return &mostCommonCoverId, nil
+	if len(mostCommonCoverIds) > n {
+		mostCommonCoverIds = mostCommonCoverIds[:n]
+	}
+
+	return mostCommonCoverIds, nil
 }

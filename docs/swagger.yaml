@@ -59,6 +59,69 @@ definitions:
       year:
         type: integer
     type: object
+  artist_handler.readAllResponse:
+    description: List of all artists
+    properties:
+      artists:
+        items:
+          $ref: '#/definitions/artist_handler.readAllResponseItem'
+        type: array
+    type: object
+  artist_handler.readAllResponseItem:
+    description: Artist details
+    properties:
+      artistId:
+        type: integer
+      mostPopularCoversIds:
+        items:
+          type: integer
+        type: array
+      name:
+        type: string
+      tracksCount:
+        type: integer
+    type: object
+  artist_handler.readResponseArtist:
+    description: Response structure containing detailed information about an artist
+      and his tracks.
+    properties:
+      artistId:
+        type: integer
+      mostPopularCoverIds:
+        items:
+          type: integer
+        type: array
+      name:
+        type: string
+      trackMetadataList:
+        items:
+          $ref: '#/definitions/artist_handler.readResponseTrack'
+        type: array
+      tracksCount:
+        type: integer
+    type: object
+  artist_handler.readResponseTrack:
+    description: Response structure containing details about a track.
+    properties:
+      albumId:
+        type: integer
+      artistId:
+        type: integer
+      discNumber:
+        type: integer
+      genreId:
+        type: integer
+      title:
+        type: string
+      trackId:
+        type: integer
+      trackMetadataId:
+        type: integer
+      trackNumber:
+        type: integer
+      year:
+        type: integer
+    type: object
   types.Error:
     description: Response structure for error messages
     properties:
@@ -124,4 +187,50 @@ paths:
       summary: Get detailed information about an album and its tracks by album id
       tags:
       - Albums
+  /artists:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/artist_handler.readAllResponse'
+        "500":
+          description: Failed to fetch all artists
+          schema:
+            $ref: '#/definitions/types.Error'
+      summary: Get all artists
+      tags:
+      - Artists
+  /artists/{artistId}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Artist Identifier
+        in: path
+        name: artistId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/artist_handler.readResponseArtist'
+        "400":
+          description: Invalid artistId format
+          schema:
+            $ref: '#/definitions/types.Error'
+        "500":
+          description: Failed to fetch artist with details
+          schema:
+            $ref: '#/definitions/types.Error'
+      summary: Get detailed information about an artist and his tracks by artist id
+      tags:
+      - Artists
 swagger: "2.0"

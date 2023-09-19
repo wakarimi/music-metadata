@@ -92,6 +92,77 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/artists": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Artists"
+                ],
+                "summary": "Get all artists",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/artist_handler.readAllResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch all artists",
+                        "schema": {
+                            "$ref": "#/definitions/types.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/artists/{artistId}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Artists"
+                ],
+                "summary": "Get detailed information about an artist and his tracks by artist id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Artist Identifier",
+                        "name": "artistId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/artist_handler.readResponseArtist"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid artistId format",
+                        "schema": {
+                            "$ref": "#/definitions/types.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch artist with details",
+                        "schema": {
+                            "$ref": "#/definitions/types.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -150,6 +221,99 @@ const docTemplate = `{
             }
         },
         "album_handler.readResponseTrack": {
+            "description": "Response structure containing details about a track.",
+            "type": "object",
+            "properties": {
+                "albumId": {
+                    "type": "integer"
+                },
+                "artistId": {
+                    "type": "integer"
+                },
+                "discNumber": {
+                    "type": "integer"
+                },
+                "genreId": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "trackId": {
+                    "type": "integer"
+                },
+                "trackMetadataId": {
+                    "type": "integer"
+                },
+                "trackNumber": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "artist_handler.readAllResponse": {
+            "description": "List of all artists",
+            "type": "object",
+            "properties": {
+                "artists": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/artist_handler.readAllResponseItem"
+                    }
+                }
+            }
+        },
+        "artist_handler.readAllResponseItem": {
+            "description": "Artist details",
+            "type": "object",
+            "properties": {
+                "artistId": {
+                    "type": "integer"
+                },
+                "mostPopularCoversIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "tracksCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "artist_handler.readResponseArtist": {
+            "description": "Response structure containing detailed information about an artist and his tracks.",
+            "type": "object",
+            "properties": {
+                "artistId": {
+                    "type": "integer"
+                },
+                "mostPopularCoverIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "trackMetadataList": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/artist_handler.readResponseTrack"
+                    }
+                },
+                "tracksCount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "artist_handler.readResponseTrack": {
             "description": "Response structure containing details about a track.",
             "type": "object",
             "properties": {
