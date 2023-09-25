@@ -13,6 +13,7 @@ import (
 	"music-metadata/internal/handlers/artist_handler"
 	"music-metadata/internal/handlers/genre_handler"
 	"music-metadata/internal/handlers/track_metadata"
+	"music-metadata/internal/handlers/track_metadata_handler"
 	"music-metadata/internal/middleware"
 	"music-metadata/internal/service"
 	"music-metadata/internal/service/album_service"
@@ -42,6 +43,7 @@ func SetupRouter(appCtx *context.AppContext) (r *gin.Engine) {
 	trackMetadataService := track_metadata_service.NewService(txManager, trackMetadataRepo)
 	coverService := cover_service.NewService(albumRepo, artistRepo, genreRepo, trackMetadataRepo, trackClient)
 
+	trackMetadataHandler := track_metadata_handler.NewHandler(txManager, *trackMetadataService, *albumService, *artistService, *genreService)
 	albumHandler := album_handler.NewHandler(txManager, *albumService, *trackMetadataService, *coverService)
 	artistHandler := artist_handler.NewHandler(txManager, *artistService, *trackMetadataService, *coverService)
 	genreHandler := genre_handler.NewHandler(txManager, *genreService, *trackMetadataService, *coverService)
@@ -54,6 +56,10 @@ func SetupRouter(appCtx *context.AppContext) (r *gin.Engine) {
 	{
 		api.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+		trackMetadata := api.Group("/track-metadata")
+		{
+			trackMetadata.GET("/", trackMetadataHandler.ReadAll)
+		}
 		albums := api.Group("/albums")
 		{
 			albums.GET("/", albumHandler.ReadAll)

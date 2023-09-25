@@ -234,6 +234,34 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/track-metadata": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "TrackMetadata"
+                ],
+                "summary": "Get all track metadata",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/track_metadata_handler.readAllResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to fetch all genres",
+                        "schema": {
+                            "$ref": "#/definitions/types.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -492,6 +520,82 @@ const docTemplate = `{
                 },
                 "genreId": {
                     "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "trackId": {
+                    "type": "integer"
+                },
+                "trackMetadataId": {
+                    "type": "integer"
+                },
+                "trackNumber": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "track_metadata_handler.readAllResponse": {
+            "type": "object",
+            "properties": {
+                "trackMetadataList": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/track_metadata_handler.readAllResponseItem"
+                    }
+                }
+            }
+        },
+        "track_metadata_handler.readAllResponseAlbum": {
+            "type": "object",
+            "properties": {
+                "albumId": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "track_metadata_handler.readAllResponseArtist": {
+            "type": "object",
+            "properties": {
+                "artistId": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "track_metadata_handler.readAllResponseGenre": {
+            "type": "object",
+            "properties": {
+                "genreId": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "track_metadata_handler.readAllResponseItem": {
+            "type": "object",
+            "properties": {
+                "album": {
+                    "$ref": "#/definitions/track_metadata_handler.readAllResponseAlbum"
+                },
+                "artist": {
+                    "$ref": "#/definitions/track_metadata_handler.readAllResponseArtist"
+                },
+                "discNumber": {
+                    "type": "integer"
+                },
+                "genre": {
+                    "$ref": "#/definitions/track_metadata_handler.readAllResponseGenre"
                 },
                 "title": {
                     "type": "string"

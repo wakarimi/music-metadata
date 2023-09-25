@@ -312,7 +312,7 @@ func (r TrackMetadataRepository) readAllByGenre(queryer Queryer, genreId int) (t
 		trackMetadataList = append(trackMetadataList, trackMetadata)
 	}
 
-	log.Debug().Int("genreId", genreId).Int("count", len(trackMetadataList)).Msg("All track metadata by genre_handler fetched successfully")
+	log.Debug().Int("genreId", genreId).Int("count", len(trackMetadataList)).Msg("All track metadata by genre fetched successfully")
 	return trackMetadataList, nil
 }
 
@@ -501,7 +501,7 @@ func (r TrackMetadataRepository) isExistsByTrackId(queryer Queryer, trackId int)
 
 	if row.Next() {
 		if err = row.Scan(&exists); err != nil {
-			log.Error().Err(err).Int("trackId", trackId).Msg("Failed to scan result of artist_handler existence check")
+			log.Error().Err(err).Int("trackId", trackId).Msg("Failed to scan result of artist existence check")
 			return false, err
 		}
 	}
@@ -509,7 +509,7 @@ func (r TrackMetadataRepository) isExistsByTrackId(queryer Queryer, trackId int)
 	if exists {
 		log.Debug().Int("trackId", trackId).Msg("Artist exists")
 	} else {
-		log.Debug().Int("trackId", trackId).Msg("No artist_handler found")
+		log.Debug().Int("trackId", trackId).Msg("No artist found")
 	}
 	return exists, nil
 }

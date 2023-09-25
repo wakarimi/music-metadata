@@ -185,6 +185,55 @@ definitions:
       year:
         type: integer
     type: object
+  track_metadata_handler.readAllResponse:
+    properties:
+      trackMetadataList:
+        items:
+          $ref: '#/definitions/track_metadata_handler.readAllResponseItem'
+        type: array
+    type: object
+  track_metadata_handler.readAllResponseAlbum:
+    properties:
+      albumId:
+        type: integer
+      title:
+        type: string
+    type: object
+  track_metadata_handler.readAllResponseArtist:
+    properties:
+      artistId:
+        type: integer
+      name:
+        type: string
+    type: object
+  track_metadata_handler.readAllResponseGenre:
+    properties:
+      genreId:
+        type: integer
+      name:
+        type: string
+    type: object
+  track_metadata_handler.readAllResponseItem:
+    properties:
+      album:
+        $ref: '#/definitions/track_metadata_handler.readAllResponseAlbum'
+      artist:
+        $ref: '#/definitions/track_metadata_handler.readAllResponseArtist'
+      discNumber:
+        type: integer
+      genre:
+        $ref: '#/definitions/track_metadata_handler.readAllResponseGenre'
+      title:
+        type: string
+      trackId:
+        type: integer
+      trackMetadataId:
+        type: integer
+      trackNumber:
+        type: integer
+      year:
+        type: integer
+    type: object
   types.Error:
     description: Response structure for error messages
     properties:
@@ -342,4 +391,22 @@ paths:
       summary: Get detailed information about an genre and his tracks by genre id
       tags:
       - Genres
+  /track-metadata:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/track_metadata_handler.readAllResponse'
+        "500":
+          description: Failed to fetch all genres
+          schema:
+            $ref: '#/definitions/types.Error'
+      summary: Get all track metadata
+      tags:
+      - TrackMetadata
 swagger: "2.0"

@@ -31,12 +31,12 @@ func NewGenreRepository(db *sqlx.DB) GenreRepositoryInterface {
 }
 
 func (r *GenreRepository) Create(genre models.Genre) (genreId int, err error) {
-	log.Debug().Str("name", genre.Name).Msg("Creating new genre_handler")
+	log.Debug().Str("name", genre.Name).Msg("Creating new genre")
 	return r.create(r.Db, genre)
 }
 
 func (r *GenreRepository) CreateTx(tx *sqlx.Tx, genre models.Genre) (genreId int, err error) {
-	log.Debug().Str("name", genre.Name).Msg("Creating new genre_handler transactional")
+	log.Debug().Str("name", genre.Name).Msg("Creating new genre transactional")
 	return r.create(tx, genre)
 }
 
@@ -48,7 +48,7 @@ func (r *GenreRepository) create(queryer Queryer, genre models.Genre) (genreId i
 	`
 	rows, err := queryer.NamedQuery(query, genre)
 	if err != nil {
-		log.Error().Err(err).Str("name", genre.Name).Msg("Failed to create genre_handler")
+		log.Error().Err(err).Str("name", genre.Name).Msg("Failed to create genre")
 		return 0, err
 	}
 	defer rows.Close()
@@ -59,8 +59,8 @@ func (r *GenreRepository) create(queryer Queryer, genre models.Genre) (genreId i
 			return 0, err
 		}
 	} else {
-		err := fmt.Errorf("no id returned after genre_handler insert")
-		log.Error().Err(err).Str("name", genre.Name).Msg("No id returned after genre_handler insert")
+		err := fmt.Errorf("no id returned after genre insert")
+		log.Error().Err(err).Str("name", genre.Name).Msg("No id returned after genre insert")
 		return 0, err
 	}
 
@@ -69,12 +69,12 @@ func (r *GenreRepository) create(queryer Queryer, genre models.Genre) (genreId i
 }
 
 func (r *GenreRepository) Read(genreId int) (genre models.Genre, err error) {
-	log.Debug().Int("id", genreId).Msg("Fetching genre_handler")
+	log.Debug().Int("id", genreId).Msg("Fetching genre")
 	return r.read(r.Db, genreId)
 }
 
 func (r *GenreRepository) ReadTx(tx *sqlx.Tx, genreId int) (genre models.Genre, err error) {
-	log.Debug().Int("id", genreId).Msg("Fetching genre_handler transactional")
+	log.Debug().Int("id", genreId).Msg("Fetching genre transactional")
 	return r.read(tx, genreId)
 }
 
@@ -89,19 +89,19 @@ func (r *GenreRepository) read(queryer Queryer, genreId int) (genre models.Genre
 	}
 	rows, err := queryer.NamedQuery(query, args)
 	if err != nil {
-		log.Error().Err(err).Int("id", genreId).Msg("Failed to fetch genre_handler")
+		log.Error().Err(err).Int("id", genreId).Msg("Failed to fetch genre")
 		return models.Genre{}, err
 	}
 	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.StructScan(&genre); err != nil {
-			log.Error().Err(err).Int("id", genreId).Msg("Failed to scan genre_handler into struct")
+			log.Error().Err(err).Int("id", genreId).Msg("Failed to scan genre into struct")
 			return models.Genre{}, err
 		}
 	} else {
-		err := fmt.Errorf("no genre_handler found with id: %d", genreId)
-		log.Error().Err(err).Int("id", genreId).Msg("No genre_handler found")
+		err := fmt.Errorf("no genre found with id: %d", genreId)
+		log.Error().Err(err).Int("id", genreId).Msg("No genre found")
 		return models.Genre{}, err
 	}
 
@@ -110,12 +110,12 @@ func (r *GenreRepository) read(queryer Queryer, genreId int) (genre models.Genre
 }
 
 func (r *GenreRepository) ReadByName(name string) (genre models.Genre, err error) {
-	log.Debug().Str("name", name).Msg("Fetching genre_handler by name")
+	log.Debug().Str("name", name).Msg("Fetching genre by name")
 	return r.readByName(r.Db, name)
 }
 
 func (r *GenreRepository) ReadByNameTx(tx *sqlx.Tx, name string) (genre models.Genre, err error) {
-	log.Debug().Str("name", name).Msg("Fetching genre_handler by name transactional")
+	log.Debug().Str("name", name).Msg("Fetching genre by name transactional")
 	return r.readByName(tx, name)
 }
 
@@ -130,19 +130,19 @@ func (r *GenreRepository) readByName(queryer Queryer, name string) (genre models
 	}
 	rows, err := queryer.NamedQuery(query, args)
 	if err != nil {
-		log.Error().Err(err).Str("name", name).Msg("Failed to fetch genre_handler")
+		log.Error().Err(err).Str("name", name).Msg("Failed to fetch genre")
 		return models.Genre{}, err
 	}
 	defer rows.Close()
 
 	if rows.Next() {
 		if err := rows.StructScan(&genre); err != nil {
-			log.Error().Err(err).Str("name", name).Msg("Failed to scan genre_handler into struct")
+			log.Error().Err(err).Str("name", name).Msg("Failed to scan genre into struct")
 			return models.Genre{}, err
 		}
 	} else {
-		err := fmt.Errorf("no genre_handler found with name: %s", name)
-		log.Error().Err(err).Str("name", name).Msg("No genre_handler found")
+		err := fmt.Errorf("no genre found with name: %s", name)
+		log.Error().Err(err).Str("name", name).Msg("No genre found")
 		return models.Genre{}, err
 	}
 
@@ -188,17 +188,17 @@ func (r *GenreRepository) readAll(queryer Queryer) (genres []models.Genre, err e
 }
 
 func (r *GenreRepository) Delete(genreId int) (err error) {
-	log.Debug().Int("id", genreId).Msg("Deleting genre_handler")
+	log.Debug().Int("id", genreId).Msg("Deleting genre")
 	return r.delete(r.Db, genreId)
 }
 
 func (r *GenreRepository) DeleteTx(tx *sqlx.Tx, genreId int) (err error) {
-	log.Debug().Int("id", genreId).Msg("Deleting genre_handler transactional")
+	log.Debug().Int("id", genreId).Msg("Deleting genre transactional")
 	return r.delete(tx, genreId)
 }
 
 func (r *GenreRepository) delete(queryer Queryer, genreId int) (err error) {
-	log.Debug().Int("id", genreId).Msg("Deleting genre_handler")
+	log.Debug().Int("id", genreId).Msg("Deleting genre")
 
 	query := `
 		DELETE FROM genres
@@ -209,7 +209,7 @@ func (r *GenreRepository) delete(queryer Queryer, genreId int) (err error) {
 	}
 	_, err = queryer.NamedExec(query, args)
 	if err != nil {
-		log.Error().Err(err).Int("id", genreId).Msg("Failed to delete genre_handler")
+		log.Error().Err(err).Int("id", genreId).Msg("Failed to delete genre")
 		return err
 	}
 
@@ -218,12 +218,12 @@ func (r *GenreRepository) delete(queryer Queryer, genreId int) (err error) {
 }
 
 func (r *GenreRepository) IsExistsByName(name string) (exists bool, err error) {
-	log.Debug().Str("name", name).Msg("Checking if genre_handler exists by name")
+	log.Debug().Str("name", name).Msg("Checking if genre exists by name")
 	return r.isExistsByName(r.Db, name)
 }
 
 func (r *GenreRepository) IsExistsByNameTx(tx *sqlx.Tx, name string) (exists bool, err error) {
-	log.Debug().Str("name", name).Msg("Checking if genre_handler exists by name transactional")
+	log.Debug().Str("name", name).Msg("Checking if genre exists by name transactional")
 	return r.isExistsByName(r.Db, name)
 }
 
@@ -240,14 +240,14 @@ func (r *GenreRepository) isExistsByName(queryer Queryer, name string) (exists b
 	}
 	row, err := queryer.NamedQuery(query, args)
 	if err != nil {
-		log.Error().Err(err).Str("name", name).Msg("Failed to execute query to check genre_handler existence")
+		log.Error().Err(err).Str("name", name).Msg("Failed to execute query to check genre existence")
 		return false, err
 	}
 	defer row.Close()
 
 	if row.Next() {
 		if err = row.Scan(&exists); err != nil {
-			log.Error().Err(err).Str("name", name).Msg("Failed to scan result of genre_handler existence check")
+			log.Error().Err(err).Str("name", name).Msg("Failed to scan result of genre existence check")
 			return false, err
 		}
 	}
@@ -255,7 +255,7 @@ func (r *GenreRepository) isExistsByName(queryer Queryer, name string) (exists b
 	if exists {
 		log.Debug().Str("name", name).Msg("Genre exists")
 	} else {
-		log.Debug().Str("name", name).Msg("No genre_handler found")
+		log.Debug().Str("name", name).Msg("No genre found")
 	}
 	return exists, nil
 }
