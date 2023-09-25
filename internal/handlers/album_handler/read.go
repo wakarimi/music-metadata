@@ -18,7 +18,7 @@ import (
 // @Property Title (string, optional) Title of the track.
 // @Property AlbumId (integer, optional) Identifier for the associated album.
 // @Property ArtistId (integer, optional) Identifier for the associated artist_handler.
-// @Property GenreId (integer, optional) Identifier for the genre.
+// @Property GenreId (integer, optional) Identifier for the genre_handler.
 // @Property Year (integer, optional) Year of release.
 // @Property TrackNumber (integer, optional) The track's position in the album.
 // @Property DiscNumber (integer, optional) The disc number for multi-disc albums.

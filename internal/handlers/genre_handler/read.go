@@ -1,4 +1,4 @@
-package artist_handler
+package genre_handler
 
 import (
 	"github.com/gin-gonic/gin"
@@ -17,8 +17,8 @@ import (
 // @Property TrackId (integer) Unique identifier for the track.
 // @Property Title (string, optional) Title of the track.
 // @Property AlbumId (integer, optional) Identifier for the associated album.
-// @Property ArtistId (integer, optional) Identifier for the associated artist_handler.
-// @Property GenreId (integer, optional) Identifier for the genre_handler.
+// @Property ArtistId (integer, optional) Identifier for the associated artist.
+// @Property GenreId (integer, optional) Identifier for the genre.
 // @Property Year (integer, optional) Year of release.
 // @Property TrackNumber (integer, optional) The track's position in the album.
 // @Property DiscNumber (integer, optional) The disc number for multi-disc albums.
@@ -34,60 +34,60 @@ type readResponseTrack struct {
 	DiscNumber      *int    `json:"discNumber"`
 }
 
-// readResponseArtist godoc
-// @Description Response structure containing detailed information about an artist and his tracks.
-// @Property ArtistId (integer) Unique identifier for the artist.
-// @Property Name (string) Name of the artist.
-// @Property MostPopularCoverIds (array, optional) Identifier for the artist's most popular cover.
-// @Property TracksCount (integer) Number of tracks performed by the artist.
-// @Property TrackMetadataList (array) List of track metadata for the artist.
-type readResponseArtist struct {
-	ArtistId            int                 `json:"artistId"`
+// readResponseGenre godoc
+// @Description Response structure containing detailed information about an genre and his tracks.
+// @Property GenreId (integer) Unique identifier for the genre.
+// @Property Name (string) Name of the genre.
+// @Property MostPopularCoverIds (array, optional) Identifier for the genre's most popular cover.
+// @Property TracksCount (integer) Number of tracks performed by the genre.
+// @Property TrackMetadataList (array) List of track metadata for the genre.
+type readResponseGenre struct {
+	GenreId             int                 `json:"genreId"`
 	Name                string              `json:"name"`
 	MostPopularCoverIds []int               `json:"mostPopularCoverIds,omitempty"`
 	TracksCount         int                 `json:"tracksCount"`
 	TrackMetadataList   []readResponseTrack `json:"trackMetadataList"`
 }
 
-// ReadArtist godoc
-// @Summary Get detailed information about an artist and his tracks by artist id
-// @Tags Artists
+// ReadGenre godoc
+// @Summary Get detailed information about an genre and his tracks by genre id
+// @Tags Genres
 // @Accept json
 // @Produce json
-// @Param artistId path integer true "Artist Identifier"
-// @Success 200 {object} readResponseArtist
-// @Failure 400 {object} types.Error "Invalid artistId format"
-// @Failure 500 {object} types.Error "Failed to fetch artist with details"
-// @Router /artists/{artistId} [get]
+// @Param genreId path integer true "Genre Identifier"
+// @Success 200 {object} readResponseGenre
+// @Failure 400 {object} types.Error "Invalid genreId format"
+// @Failure 500 {object} types.Error "Failed to fetch genre with details"
+// @Router /genres/{genreId} [get]
 func (h *Handler) Read(c *gin.Context) {
-	log.Debug().Msg("Fetching artist with details")
+	log.Debug().Msg("Fetching genre with details")
 
-	artistIdStr := c.Param("artistId")
-	artistId, err := strconv.Atoi(artistIdStr)
+	genreIdStr := c.Param("genreId")
+	genreId, err := strconv.Atoi(genreIdStr)
 	if err != nil {
-		log.Error().Err(err).Str("artistIdStr", artistIdStr).Msg("Invalid artistId format")
+		log.Error().Err(err).Str("genreIdStr", genreIdStr).Msg("Invalid genreId format")
 		c.JSON(http.StatusBadRequest, types.Error{
-			Error: "Invalid artistId format",
+			Error: "Invalid genreId format",
 		})
 		return
 	}
 
-	var artist models.Artist
-	var trackMetadataList []track_metadata_service.TrackMetadataReadByArtistId
+	var genre models.Genre
+	var trackMetadataList []track_metadata_service.TrackMetadataReadByGenreId
 	var mostPopularCoverIds []int
 
 	err = h.TransactionManager.WithTransaction(func(tx *sqlx.Tx) (err error) {
-		artist, err = h.ArtistService.Read(tx, artistId)
+		genre, err = h.GenreService.Read(tx, genreId)
 		if err != nil {
 			return err
 		}
 
-		trackMetadataList, err = h.TrackMetadataService.ReadByArtistId(tx, artist.ArtistId)
+		trackMetadataList, err = h.TrackMetadataService.ReadByGenreId(tx, genre.GenreId)
 		if err != nil {
 			return err
 		}
 
-		coverIds, err := h.CoverService.GetMostCommonCoverIdsByArtistId(tx, artistId, 4)
+		coverIds, err := h.CoverService.GetMostCommonCoverIdsByGenreId(tx, genreId, 4)
 		if err != nil {
 			mostPopularCoverIds = make([]int, 0)
 		} else {
@@ -98,9 +98,9 @@ func (h *Handler) Read(c *gin.Context) {
 	})
 
 	if err != nil {
-		log.Error().Err(err).Int("artistId", artistId).Msg("Failed to fetch artist with details")
+		log.Error().Err(err).Int("genreId", genreId).Msg("Failed to fetch genre with details")
 		c.JSON(http.StatusInternalServerError, types.Error{
-			Error: "Failed to fetch artist with details",
+			Error: "Failed to fetch genre with details",
 		})
 		return
 	}
@@ -120,14 +120,14 @@ func (h *Handler) Read(c *gin.Context) {
 		}
 	}
 
-	response := readResponseArtist{
-		ArtistId:            artist.ArtistId,
-		Name:                artist.Name,
+	response := readResponseGenre{
+		GenreId:             genre.GenreId,
+		Name:                genre.Name,
 		MostPopularCoverIds: mostPopularCoverIds,
 		TracksCount:         len(trackMetadataList),
 		TrackMetadataList:   trackMetadataListResponse,
 	}
 
-	log.Debug().Int("artistId", artistId).Int("tracksCount", len(trackMetadataList)).Msg("Artist fetched successfully")
+	log.Debug().Int("genreId", genreId).Int("tracksCount", len(trackMetadataList)).Msg("Genre fetched successfully")
 	c.JSON(http.StatusOK, response)
 }

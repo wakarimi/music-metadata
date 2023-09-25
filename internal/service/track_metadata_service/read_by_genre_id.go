@@ -5,7 +5,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-type TrackMetadataReadByAlbumId struct {
+type TrackMetadataReadByGenreId struct {
 	TrackMetadataId int
 	TrackId         int
 	Title           *string
@@ -18,18 +18,18 @@ type TrackMetadataReadByAlbumId struct {
 	Lyrics          *string
 }
 
-func (s *Service) ReadByAlbumId(tx *sqlx.Tx, albumId int) (trackMetadataList []TrackMetadataReadByAlbumId, err error) {
-	log.Debug().Int("albumId", albumId).Msg("Fetching track metadata list by albumId")
+func (s *Service) ReadByGenreId(tx *sqlx.Tx, genreId int) (trackMetadataList []TrackMetadataReadByGenreId, err error) {
+	log.Debug().Int("genreId", genreId).Msg("Fetching track metadata list by genreId")
 
-	trackMetadataModelList, err := s.TrackMetadataRepo.ReadAllByAlbumTx(tx, albumId)
+	trackMetadataModelList, err := s.TrackMetadataRepo.ReadAllByGenreTx(tx, genreId)
 	if err != nil {
-		log.Error().Err(err).Int("albumId", albumId).Msg("Failed to fetch track metadata by albumId")
-		return make([]TrackMetadataReadByAlbumId, 0), err
+		log.Error().Err(err).Int("genreId", genreId).Msg("Failed to fetch track metadata by genreId")
+		return make([]TrackMetadataReadByGenreId, 0), err
 	}
 
-	trackMetadataList = make([]TrackMetadataReadByAlbumId, len(trackMetadataModelList))
+	trackMetadataList = make([]TrackMetadataReadByGenreId, len(trackMetadataModelList))
 	for i, trackMetadataModel := range trackMetadataModelList {
-		trackMetadataList[i] = TrackMetadataReadByAlbumId{
+		trackMetadataList[i] = TrackMetadataReadByGenreId{
 			TrackMetadataId: trackMetadataModel.TrackMetadataId,
 			TrackId:         trackMetadataModel.TrackId,
 			Title:           trackMetadataModel.Title,
@@ -43,6 +43,6 @@ func (s *Service) ReadByAlbumId(tx *sqlx.Tx, albumId int) (trackMetadataList []T
 		}
 	}
 
-	log.Debug().Int("albumId", albumId).Int("tracksCount", len(trackMetadataList)).Msg("Track metadata list by albumId fetched successfully")
+	log.Debug().Int("genreId", genreId).Int("tracksCount", len(trackMetadataList)).Msg("Track metadata list by genreId fetched successfully")
 	return trackMetadataList, nil
 }

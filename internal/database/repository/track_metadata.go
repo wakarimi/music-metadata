@@ -312,7 +312,7 @@ func (r TrackMetadataRepository) readAllByGenre(queryer Queryer, genreId int) (t
 		trackMetadataList = append(trackMetadataList, trackMetadata)
 	}
 
-	log.Debug().Int("genreId", genreId).Int("count", len(trackMetadataList)).Msg("All track metadata by genre fetched successfully")
+	log.Debug().Int("genreId", genreId).Int("count", len(trackMetadataList)).Msg("All track metadata by genre_handler fetched successfully")
 	return trackMetadataList, nil
 }
 

@@ -9,8 +9,8 @@ type TrackMetadataReadByArtistId struct {
 	TrackMetadataId int
 	TrackId         int
 	Title           *string
-	ArtistId        *int
 	AlbumId         *int
+	ArtistId        *int
 	GenreId         *int
 	Year            *int
 	TrackNumber     *int
@@ -33,8 +33,8 @@ func (s *Service) ReadByArtistId(tx *sqlx.Tx, artistId int) (trackMetadataList [
 			TrackMetadataId: trackMetadataModel.TrackMetadataId,
 			TrackId:         trackMetadataModel.TrackId,
 			Title:           trackMetadataModel.Title,
-			ArtistId:        trackMetadataModel.ArtistId,
 			AlbumId:         trackMetadataModel.AlbumId,
+			ArtistId:        trackMetadataModel.ArtistId,
 			GenreId:         trackMetadataModel.GenreId,
 			Year:            trackMetadataModel.Year,
 			TrackNumber:     trackMetadataModel.TrackNumber,

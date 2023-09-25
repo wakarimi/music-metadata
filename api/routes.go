@@ -11,13 +11,14 @@ import (
 	"music-metadata/internal/database/repository"
 	"music-metadata/internal/handlers/album_handler"
 	"music-metadata/internal/handlers/artist_handler"
-	"music-metadata/internal/handlers/genre"
+	"music-metadata/internal/handlers/genre_handler"
 	"music-metadata/internal/handlers/track_metadata"
 	"music-metadata/internal/middleware"
 	"music-metadata/internal/service"
 	"music-metadata/internal/service/album_service"
 	"music-metadata/internal/service/artist_service"
 	"music-metadata/internal/service/cover_service"
+	"music-metadata/internal/service/genre_service"
 	"music-metadata/internal/service/track_metadata_service"
 )
 
@@ -37,12 +38,13 @@ func SetupRouter(appCtx *context.AppContext) (r *gin.Engine) {
 
 	albumService := album_service.NewService(albumRepo, trackMetadataRepo, trackClient)
 	artistService := artist_service.NewService(artistRepo, trackMetadataRepo, trackClient)
+	genreService := genre_service.NewService(genreRepo, trackMetadataRepo, trackClient)
 	trackMetadataService := track_metadata_service.NewService(txManager, trackMetadataRepo)
 	coverService := cover_service.NewService(albumRepo, artistRepo, genreRepo, trackMetadataRepo, trackClient)
 
 	albumHandler := album_handler.NewHandler(txManager, *albumService, *trackMetadataService, *coverService)
 	artistHandler := artist_handler.NewHandler(txManager, *artistService, *trackMetadataService, *coverService)
-	genreHandler := genre.NewGenreHandler(genreRepo)
+	genreHandler := genre_handler.NewHandler(txManager, *genreService, *trackMetadataService, *coverService)
 	musicHandler := track_metadata.NewMusicHandler(albumRepo, artistRepo, genreRepo, trackMetadataRepo)
 
 	r = gin.New()
@@ -64,7 +66,8 @@ func SetupRouter(appCtx *context.AppContext) (r *gin.Engine) {
 		}
 		genres := api.Group("/genres")
 		{
-			genres.GET("/", genreHandler.GetAll)
+			genres.GET("/", genreHandler.ReadAll)
+			genres.GET("/:genreId", genreHandler.Read)
 		}
 
 		api.POST("/scan", func(c *gin.Context) { musicHandler.Scan(c, &appCtx.Config.HttpServer) })

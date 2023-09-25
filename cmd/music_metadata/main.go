@@ -24,7 +24,7 @@ import (
 // @license.url https://opensource.org/licenses/MIT
 
 // @host localhost:8023
-// @BasePath /api/music_metadata-service
+// @BasePath /api/music-metadata-service
 func main() {
 	cfg := loadConfiguration()
 
