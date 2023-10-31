@@ -9,7 +9,7 @@ import (
 func (s Service) GetByName(tx *sqlx.Tx, name string) (genre model.Genre, err error) {
 	log.Debug().Str("name", name).Msg("Getting new genre")
 
-	genre, err = s.GenreRepo.GetByName(tx, name)
+	genre, err = s.GenreRepo.ReadByName(tx, name)
 	if err != nil {
 		log.Error().Err(err).Str("name", name).Msg("Failed to get genre")
 		return model.Genre{}, err

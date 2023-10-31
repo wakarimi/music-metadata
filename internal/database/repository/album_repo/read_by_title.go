@@ -7,7 +7,7 @@ import (
 	"music-metadata/internal/model"
 )
 
-func (r Repository) GetByTitle(tx *sqlx.Tx, title string) (album model.Album, err error) {
+func (r Repository) ReadByTitle(tx *sqlx.Tx, title string) (album model.Album, err error) {
 	query := `
 		SELECT *
 		FROM albums
