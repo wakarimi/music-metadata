@@ -5,20 +5,52 @@ import (
 	"github.com/rs/zerolog/log"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"music-metadata/internal/client/music_files_client"
+	"music-metadata/internal/client/music_files_client/audio_file_client"
 	"music-metadata/internal/context"
+	"music-metadata/internal/database/repository/album_repo"
+	"music-metadata/internal/database/repository/artist_repo"
+	"music-metadata/internal/database/repository/genre_repo"
+	"music-metadata/internal/database/repository/song_repo"
+	"music-metadata/internal/handlers/song_handler"
 	"music-metadata/internal/middleware"
+	"music-metadata/internal/service"
+	"music-metadata/internal/service/album_service"
+	"music-metadata/internal/service/artist_service"
+	"music-metadata/internal/service/genre_service"
+	"music-metadata/internal/service/song_service"
 )
 
-func SetupRouter(appCtx *context.AppContext) (r *gin.Engine) {
+func SetupRouter(ac *context.AppContext) (r *gin.Engine) {
 	log.Debug().Msg("Router setup")
 	gin.SetMode(gin.ReleaseMode)
 
 	r = gin.New()
 	r.Use(middleware.ZerologMiddleware(log.Logger))
 
-	api := r.Group("/api/music-metadata-service")
+	musicFilesClient := music_files_client.NewClient(ac.Config.HttpServer.MusicFilesAddress)
+	audioFileClient := audio_file_client.NewAudioFileClient(musicFilesClient)
+
+	albumRepo := album_repo.NewRepository()
+	artistRepo := artist_repo.NewRepository()
+	genreRepo := genre_repo.NewRepository()
+	songRepo := song_repo.NewRepository()
+	txManager := service.NewTransactionManager(*ac.Db)
+
+	albumService := album_service.NewService(albumRepo)
+	artistService := artist_service.NewService(artistRepo)
+	genreService := genre_service.NewService(genreRepo)
+	songService := song_service.NewService(songRepo, *albumService, *artistService, *genreService, audioFileClient)
+
+	songHandler := song_handler.NewHandler(*songService, txManager)
+
+	api := r.Group("/api")
 	{
 		api.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+		api.POST("/scan", func(c *gin.Context) {
+			songHandler.Scan(c, ac.Config.HttpServer.OtherHttpServers.MusicFilesAddress)
+		})
 	}
 
 	log.Debug().Msg("Router setup successfully")

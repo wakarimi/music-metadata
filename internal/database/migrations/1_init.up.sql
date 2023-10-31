@@ -25,10 +25,10 @@ CREATE TABLE "songs"
     "artist_id"         INTEGER,
     "genre_id"          INTEGER,
     "year"              INTEGER,
-    "track_number"      INTEGER,
+    "song_number"      INTEGER,
     "disc_number"       INTEGER,
     "lyrics"            TEXT,
-    "hash_sha_256"      TEXT    NOT NULL,
+    "sha_256"           TEXT    NOT NULL,
     FOREIGN KEY ("artist_id") REFERENCES "artists" ("artist_id"),
     FOREIGN KEY ("album_id") REFERENCES "albums" ("album_id"),
     FOREIGN KEY ("genre_id") REFERENCES "genres" ("genre_id")

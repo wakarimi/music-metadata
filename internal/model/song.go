@@ -1,4 +1,4 @@
-package models
+package model
 
 type Song struct {
 	SongId      int     `db:"song_id"`
@@ -8,8 +8,8 @@ type Song struct {
 	ArtistId    *int    `db:"artist_id"`
 	GenreId     *int    `db:"genre_id"`
 	Year        *int    `db:"year"`
-	TrackNumber *int    `db:"track_number"`
+	SongNumber  *int    `db:"song_number"`
 	DiscNumber  *int    `db:"disc_number"`
 	Lyrics      *string `db:"lyrics"`
-	HashSha256  string  `db:"hash_sha_256"`
+	Sha256      string  `db:"sha_256"`
 }
