@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-func (h *Handler) Scan(c *gin.Context, musicFilesHttpAddress string) {
+func (h *Handler) Scan(c *gin.Context) {
 	log.Debug().Msg("Scanning songs")
 
 	err := h.TransactionManager.WithTransaction(func(tx *sqlx.Tx) (err error) {

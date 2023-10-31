@@ -30,7 +30,10 @@ func (s *Service) Scan(tx *sqlx.Tx) (err error) {
 	for _, audioFile := range audioFiles {
 		processed := false
 		for _, song := range songs {
-			if (audioFile.AudioFileId == song.AudioFileId) && (audioFile.Sha256 != song.Sha256) {
+			if (audioFile.AudioFileId == song.AudioFileId) && (audioFile.Sha256 == song.Sha256) {
+				processed = true
+				break
+			} else if (audioFile.AudioFileId == song.AudioFileId) && (audioFile.Sha256 != song.Sha256) {
 				songsWithChangedContent = append(songsWithChangedContent, song)
 				processed = true
 				break
@@ -41,7 +44,7 @@ func (s *Service) Scan(tx *sqlx.Tx) (err error) {
 			}
 		}
 		if processed {
-			break
+			continue
 		}
 
 		onlyAudioFileExists = append(onlyAudioFileExists, audioFile)
@@ -143,7 +146,7 @@ func (s *Service) updateSongsWithChangedAudioFileId(tx *sqlx.Tx, audioFiles []au
 	for _, audioFile := range audioFiles {
 		songId := -1
 		for _, song := range songs {
-			if song.AudioFileId == audioFile.AudioFileId {
+			if song.Sha256 == audioFile.Sha256 {
 				songId = song.SongId
 				break
 			}

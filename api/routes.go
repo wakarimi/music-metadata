@@ -54,9 +54,7 @@ func SetupRouter(ac *context.AppContext) (r *gin.Engine) {
 	{
 		api.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-		api.POST("/scan", func(c *gin.Context) {
-			songHandler.Scan(c, ac.Config.HttpServer.OtherHttpServers.MusicFilesAddress)
-		})
+		api.POST("/scan", songHandler.Scan)
 
 		album := api.Group("/albums")
 		{
