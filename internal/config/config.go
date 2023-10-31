@@ -67,6 +67,6 @@ func loadLoggingLevel() zerolog.Level {
 	case "FATAL":
 		return zerolog.FatalLevel
 	default:
-		return zerolog.DebugLevel
+		return zerolog.InfoLevel
 	}
 }

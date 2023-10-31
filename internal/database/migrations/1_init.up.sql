@@ -16,10 +16,10 @@ CREATE TABLE "genres"
     "name"     TEXT NOT NULL UNIQUE
 );
 
-CREATE TABLE "track_metadata"
+CREATE TABLE "songs"
 (
-    "track_metadata_id" SERIAL PRIMARY KEY,
-    "track_id"          INTEGER NOT NULL UNIQUE,
+    "song_id"           SERIAL PRIMARY KEY,
+    "audio_file_id"     INTEGER NOT NULL UNIQUE,
     "title"             TEXT,
     "album_id"          INTEGER,
     "artist_id"         INTEGER,

@@ -15,7 +15,7 @@ import (
 )
 
 // @title Wakarimi Music Metadata API
-// @version 0.3
+// @version 0.4
 
 // @contact.name Dmitry Kolesnikov (Zalimannard)
 // @contact.email zalimannard@mail.ru
@@ -24,7 +24,7 @@ import (
 // @license.url https://opensource.org/licenses/MIT
 
 // @host localhost:8023
-// @BasePath /api/music-metadata-service
+// @BasePath /api
 func main() {
 	cfg := loadConfiguration()
 
@@ -48,7 +48,7 @@ func loadConfiguration() *config.Configuration {
 	if err != nil {
 		log.Panic().Err(err).Msg("Failed to load configuration")
 	}
-	log.Debug().Msg("Configuration loaded")
+	log.Info().Msg("Configuration loaded")
 	return cfg
 }
 
