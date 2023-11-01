@@ -30,7 +30,7 @@ func (c *Client) CoverTopForAudioFiles(audioFileIds []int) (coversTop []int, err
 		return make([]int, 0), err
 	}
 
-	resp, err := c.audioFileClient.Request(http.MethodGet, "/api/audio-files/covers-top", bytes.NewBuffer(jsonData))
+	resp, err := c.audioFileClient.Request(http.MethodPut, "/api/audio-files/covers-top", bytes.NewBuffer(jsonData))
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to execute request for fetching top for audio files")
 		return make([]int, 0), err

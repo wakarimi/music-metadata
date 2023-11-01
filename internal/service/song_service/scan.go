@@ -15,6 +15,7 @@ func (s *Service) Scan(tx *sqlx.Tx) (err error) {
 		log.Error().Err(err).Msg("Failed to fetch audio files")
 		return err
 	}
+	audioFiles = removeDuplicateSha256(audioFiles)
 
 	songs, err := s.SongRepo.ReadAll(tx)
 	if err != nil {
@@ -181,4 +182,18 @@ func (s *Service) updateSongsWithChangedContent(tx *sqlx.Tx, songs []model.Song)
 		}
 	}
 	return nil
+}
+
+func removeDuplicateSha256(audioFiles []audio_file_client.GetAllResponseItem) []audio_file_client.GetAllResponseItem {
+	uniqueMap := make(map[string]bool)
+	var uniqueAudioFiles []audio_file_client.GetAllResponseItem
+
+	for _, file := range audioFiles {
+		if _, exists := uniqueMap[file.Sha256]; !exists {
+			uniqueMap[file.Sha256] = true
+			uniqueAudioFiles = append(uniqueAudioFiles, file)
+		}
+	}
+
+	return uniqueAudioFiles
 }
