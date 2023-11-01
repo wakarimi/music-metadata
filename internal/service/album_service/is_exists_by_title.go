@@ -15,5 +15,5 @@ func (s Service) IsExistsByTitle(tx *sqlx.Tx, title string) (exists bool, err er
 	}
 
 	log.Debug().Str("title", title).Bool("exists", exists).Msg("Album existence checked successfully")
-	return exists, err
+	return exists, nil
 }

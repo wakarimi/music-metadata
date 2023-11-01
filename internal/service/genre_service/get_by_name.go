@@ -16,5 +16,5 @@ func (s Service) GetByName(tx *sqlx.Tx, name string) (genre model.Genre, err err
 	}
 
 	log.Debug().Interface("genre", genre).Msg("Genre got successfully")
-	return genre, err
+	return genre, nil
 }

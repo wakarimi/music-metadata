@@ -16,5 +16,5 @@ func (s Service) GetByName(tx *sqlx.Tx, name string) (artist model.Artist, err e
 	}
 
 	log.Debug().Interface("artist", artist).Msg("Artist got successfully")
-	return artist, err
+	return artist, nil
 }

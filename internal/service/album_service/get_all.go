@@ -16,5 +16,5 @@ func (s Service) GetAll(tx *sqlx.Tx) (albums []model.Album, err error) {
 	}
 
 	log.Debug().Int("countOfAlbum", len(albums)).Msg("Albums got successfully")
-	return albums, err
+	return albums, nil
 }

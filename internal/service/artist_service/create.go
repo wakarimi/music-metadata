@@ -22,5 +22,5 @@ func (s Service) Create(tx *sqlx.Tx, artist model.Artist) (createdArtist model.A
 	}
 
 	log.Debug().Interface("createdArtist", createdArtist).Msg("Artist created successfully")
-	return createdArtist, err
+	return createdArtist, nil
 }

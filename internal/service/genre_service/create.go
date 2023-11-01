@@ -22,5 +22,5 @@ func (s Service) Create(tx *sqlx.Tx, genre model.Genre) (createdGenre model.Genr
 	}
 
 	log.Debug().Interface("createdGenre", createdGenre).Msg("Genre created successfully")
-	return createdGenre, err
+	return createdGenre, nil
 }

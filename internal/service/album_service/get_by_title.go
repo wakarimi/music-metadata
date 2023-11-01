@@ -16,5 +16,5 @@ func (s Service) GetByTitle(tx *sqlx.Tx, title string) (album model.Album, err e
 	}
 
 	log.Debug().Interface("album", album).Msg("Album got successfully")
-	return album, err
+	return album, nil
 }

@@ -7,6 +7,7 @@ import (
 
 type Repo interface {
 	ReadAll(tx *sqlx.Tx) (dirs []model.Song, err error)
+	ReadAllByAlbumId(tx *sqlx.Tx, albumId int) (songs []model.Song, err error)
 	Delete(tx *sqlx.Tx, songId int) (err error)
 	Create(tx *sqlx.Tx, song model.Song) (songId int, err error)
 	Update(tx *sqlx.Tx, songId int, song model.Song) (err error)

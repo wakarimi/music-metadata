@@ -16,5 +16,5 @@ func (s Service) GetAll(tx *sqlx.Tx) (genres []model.Genre, err error) {
 	}
 
 	log.Debug().Int("countOfGenre", len(genres)).Msg("Genres got successfully")
-	return genres, err
+	return genres, nil
 }

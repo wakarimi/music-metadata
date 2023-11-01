@@ -11,6 +11,14 @@ import (
 
 type GetResponse struct {
 	AudioFileId       int       `json:"audioFileId"`
+	DirId             int       `json:"dirId"`
+	Filename          string    `json:"filename"`
+	Extension         string    `json:"extension"`
+	SizeByte          int64     `json:"sizeByte"`
+	DurationMs        int64     `json:"durationMs"`
+	BitrateKbps       int       `json:"bitrateKbps"`
+	SampleRateHz      int       `json:"sampleRateHz"`
+	ChannelsN         int       `json:"channelsN"`
 	Sha256            string    `json:"sha256"`
 	LastContentUpdate time.Time `json:"lastContentUpdate"`
 }
