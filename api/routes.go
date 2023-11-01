@@ -48,8 +48,8 @@ func SetupRouter(ac *context.AppContext) (r *gin.Engine) {
 	coverService := cover_service.NewService(*songService, audioFileClient)
 
 	albumHandler := album_handler.NewHandler(*albumService, *coverService, txManager)
-	artistHandler := artist_handler.NewHandler(*artistService, txManager)
-	genreHandler := genre_handler.NewHandler(*genreService, txManager)
+	artistHandler := artist_handler.NewHandler(*artistService, *coverService, txManager)
+	genreHandler := genre_handler.NewHandler(*genreService, *coverService, txManager)
 	songHandler := song_handler.NewHandler(*songService, txManager)
 
 	api := r.Group("/api")
