@@ -11,6 +11,7 @@ type Repo interface {
 	ReadByName(tx *sqlx.Tx, name string) (genre model.Genre, err error)
 	ReadAll(tx *sqlx.Tx) (genres []model.Genre, err error)
 	Delete(tx *sqlx.Tx, genreId int) (err error)
+	IsExists(tx *sqlx.Tx, genreId int) (exists bool, err error)
 	IsExistsByName(tx *sqlx.Tx, name string) (exists bool, err error)
 	IsUsed(tx *sqlx.Tx, genreId int) (used bool, err error)
 }

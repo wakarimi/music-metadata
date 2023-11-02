@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
+	"music-metadata/internal/errors"
 	"music-metadata/internal/handlers/response"
 	"music-metadata/internal/model"
 	"net/http"
@@ -52,11 +53,18 @@ func (h *Handler) GetByGenreId(c *gin.Context) {
 		return nil
 	})
 	if err != nil {
-		log.Error().Err(err).Int("genreId", genreId).Msg("Failed to get songs")
-		c.JSON(http.StatusInternalServerError, response.Error{
-			Message: "Failed to get songs",
-			Reason:  err.Error(),
-		})
+		log.Warn().Err(err).Int("genreId", genreId).Msg("Failed to get songs by genre")
+		if _, ok := err.(errors.NotFound); ok {
+			c.JSON(http.StatusNotFound, response.Error{
+				Message: "Album not found",
+				Reason:  err.Error(),
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, response.Error{
+				Message: "Failed to get songs by genre",
+				Reason:  err.Error(),
+			})
+		}
 		return
 	}
 
