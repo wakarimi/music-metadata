@@ -18,7 +18,7 @@ func (s Service) GetAllByArtistId(tx *sqlx.Tx, artistId int) (songs []model.Song
 	}
 	if !exists {
 		err = errors.NotFound{Resource: fmt.Sprintf("artist with id=%d", artistId)}
-		log.Error().Err(err).Int("artistId", artistId).Msg("Directory not found")
+		log.Error().Err(err).Int("artistId", artistId).Msg("Artist not found")
 		return make([]model.Song, 0), err
 	}
 

@@ -18,7 +18,7 @@ func (s Service) GetAllByGenreId(tx *sqlx.Tx, genreId int) (songs []model.Song, 
 	}
 	if !exists {
 		err = errors.NotFound{Resource: fmt.Sprintf("genre with id=%d", genreId)}
-		log.Error().Err(err).Int("genreId", genreId).Msg("Directory not found")
+		log.Error().Err(err).Int("genreId", genreId).Msg("Genre not found")
 		return make([]model.Song, 0), err
 	}
 

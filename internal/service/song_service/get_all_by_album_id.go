@@ -18,7 +18,7 @@ func (s Service) GetAllByAlbumId(tx *sqlx.Tx, albumId int) (songs []model.Song, 
 	}
 	if !exists {
 		err = errors.NotFound{Resource: fmt.Sprintf("album with id=%d", albumId)}
-		log.Error().Err(err).Int("albumId", albumId).Msg("Directory not found")
+		log.Error().Err(err).Int("albumId", albumId).Msg("Album not found")
 		return make([]model.Song, 0), err
 	}
 
