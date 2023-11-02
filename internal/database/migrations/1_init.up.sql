@@ -16,18 +16,19 @@ CREATE TABLE "genres"
     "name"     TEXT NOT NULL UNIQUE
 );
 
-CREATE TABLE "track_metadata"
+CREATE TABLE "songs"
 (
-    "track_metadata_id" SERIAL PRIMARY KEY,
-    "track_id"          INTEGER,
-    "title"             TEXT,
-    "artist_id"         INTEGER,
-    "album_id"          INTEGER,
-    "genre_id"          INTEGER,
-    "bitrate"           INTEGER,
-    "channels"          INTEGER,
-    "sample_rate"       INTEGER,
-    "duration"          INTEGER,
+    "song_id"       SERIAL PRIMARY KEY,
+    "audio_file_id" INTEGER NOT NULL UNIQUE,
+    "title"         TEXT,
+    "album_id"      INTEGER,
+    "artist_id"     INTEGER,
+    "genre_id"      INTEGER,
+    "year"          INTEGER,
+    "song_number"   INTEGER,
+    "disc_number"   INTEGER,
+    "lyrics"        TEXT,
+    "sha_256"       TEXT    NOT NULL UNIQUE,
     FOREIGN KEY ("artist_id") REFERENCES "artists" ("artist_id"),
     FOREIGN KEY ("album_id") REFERENCES "albums" ("album_id"),
     FOREIGN KEY ("genre_id") REFERENCES "genres" ("genre_id")

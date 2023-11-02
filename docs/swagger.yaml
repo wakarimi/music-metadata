@@ -1,0 +1,717 @@
+basePath: /api
+definitions:
+  album_handler.getAllResponse:
+    properties:
+      albums:
+        description: Array of albums.
+        items:
+          $ref: '#/definitions/album_handler.getAllResponseItem'
+        type: array
+    type: object
+  album_handler.getAllResponseItem:
+    properties:
+      albumId:
+        description: Unique identifier for the album.
+        type: integer
+      bestCovers:
+        description: Optional array of best cover IDs for the album.
+        items:
+          type: integer
+        type: array
+      title:
+        description: Title of the album.
+        type: string
+    type: object
+  album_handler.getResponse:
+    properties:
+      albumId:
+        description: Unique identifier for the album.
+        type: integer
+      bestCovers:
+        description: Optional array of best cover IDs.
+        items:
+          type: integer
+        type: array
+      title:
+        description: Title of the album.
+        type: string
+    type: object
+  artist_handler.getAllResponse:
+    properties:
+      artists:
+        description: Array of artists.
+        items:
+          $ref: '#/definitions/artist_handler.getAllResponseItem'
+        type: array
+    type: object
+  artist_handler.getAllResponseItem:
+    properties:
+      artistId:
+        description: Unique identifier for the artist.
+        type: integer
+      bestCovers:
+        description: Optional array of best cover IDs for the artist.
+        items:
+          type: integer
+        type: array
+      name:
+        description: Name of the artist.
+        type: string
+    type: object
+  artist_handler.getResponse:
+    properties:
+      artistId:
+        description: Unique identifier for the artist.
+        type: integer
+      bestCovers:
+        description: Optional array of best cover IDs.
+        items:
+          type: integer
+        type: array
+      name:
+        description: Name of the artist.
+        type: string
+    type: object
+  genre_handler.getAllResponse:
+    properties:
+      genres:
+        description: Array of genres.
+        items:
+          $ref: '#/definitions/genre_handler.getAllResponseItem'
+        type: array
+    type: object
+  genre_handler.getAllResponseItem:
+    properties:
+      bestCovers:
+        description: Optional array of best cover IDs for the genre.
+        items:
+          type: integer
+        type: array
+      genreId:
+        description: Unique identifier for the genre.
+        type: integer
+      name:
+        description: Name of the genre.
+        type: string
+    type: object
+  genre_handler.getResponse:
+    properties:
+      bestCovers:
+        description: Optional array of best cover IDs.
+        items:
+          type: integer
+        type: array
+      genreId:
+        description: Unique identifier for the genre.
+        type: integer
+      name:
+        description: Name of the genre.
+        type: string
+    type: object
+  response.Error:
+    properties:
+      message:
+        description: Human-readable error message
+        type: string
+      reason:
+        description: Internal error description
+        type: string
+    type: object
+  song_handler.getAllResponseItem:
+    properties:
+      albumId:
+        description: AlbumId is the identifier of the album to which the song belongs.
+        type: integer
+      artistId:
+        description: ArtistId is the identifier of the song's artist.
+        type: integer
+      audioFileId:
+        description: AudioFileId is the identifier of the associated audio file.
+        type: integer
+      discNumber:
+        description: DiscNumber is the disc number of the song in the album.
+        type: integer
+      genreId:
+        description: GenreId is the genre identifier of the song.
+        type: integer
+      lyrics:
+        description: Lyrics are the lyrics of the song.
+        type: string
+      sha256:
+        description: Sha256 is the SHA256 hash of the song file.
+        type: string
+      songId:
+        description: SongId is the unique identifier for the song.
+        type: integer
+      songNumber:
+        description: SongNumber is the track number of the song in the album.
+        type: integer
+      title:
+        description: Title is the title of the song.
+        type: string
+      year:
+        description: Year is the release year of the song.
+        type: integer
+    type: object
+  song_handler.getByAlbumIdResponse:
+    properties:
+      songs:
+        description: Array of songs belonging to a specific album.
+        items:
+          $ref: '#/definitions/song_handler.getByAlbumIdResponseItem'
+        type: array
+    type: object
+  song_handler.getByAlbumIdResponseItem:
+    properties:
+      albumId:
+        description: Identifier of the album to which the song belongs.
+        type: integer
+      artistId:
+        description: Identifier of the artist of the song.
+        type: integer
+      audioFileId:
+        description: Identifier for the associated audio file.
+        type: integer
+      discNumber:
+        description: Disc number of the song in the album.
+        type: integer
+      genreId:
+        description: Genre identifier of the song.
+        type: integer
+      lyrics:
+        description: Lyrics of the song.
+        type: string
+      sha256:
+        description: SHA256 hash of the song file.
+        type: string
+      songId:
+        description: Unique identifier for the song.
+        type: integer
+      songNumber:
+        description: Track number of the song in the album.
+        type: integer
+      title:
+        description: Title of the song.
+        type: string
+      year:
+        description: Release year of the song.
+        type: integer
+    type: object
+  song_handler.getByArtistIdResponse:
+    properties:
+      songs:
+        description: Array of songs belonging to a specific artist.
+        items:
+          $ref: '#/definitions/song_handler.getByArtistIdResponseItem'
+        type: array
+    type: object
+  song_handler.getByArtistIdResponseItem:
+    properties:
+      albumId:
+        description: Identifier of the album to which the song belongs.
+        type: integer
+      artistId:
+        description: Identifier of the artist of the song.
+        type: integer
+      audioFileId:
+        description: Identifier for the associated audio file.
+        type: integer
+      discNumber:
+        description: Disc number of the song in the album.
+        type: integer
+      genreId:
+        description: Genre identifier of the song.
+        type: integer
+      lyrics:
+        description: Lyrics of the song.
+        type: string
+      sha256:
+        description: SHA256 hash of the song file.
+        type: string
+      songId:
+        description: Unique identifier for the song.
+        type: integer
+      songNumber:
+        description: Track number of the song in the album.
+        type: integer
+      title:
+        description: Title of the song.
+        type: string
+      year:
+        description: Release year of the song.
+        type: integer
+    type: object
+  song_handler.getByGenreIdResponse:
+    properties:
+      songs:
+        description: Array of songs belonging to a specific artist.
+        items:
+          $ref: '#/definitions/song_handler.getByGenreIdResponseItem'
+        type: array
+    type: object
+  song_handler.getByGenreIdResponseItem:
+    properties:
+      albumId:
+        description: Identifier of the album to which the song belongs.
+        type: integer
+      artistId:
+        description: Identifier of the artist of the song.
+        type: integer
+      audioFileId:
+        description: Identifier for the associated audio file.
+        type: integer
+      discNumber:
+        description: Disc number of the song in the album.
+        type: integer
+      genreId:
+        description: Genre identifier of the song.
+        type: integer
+      lyrics:
+        description: Lyrics of the song.
+        type: string
+      sha256:
+        description: SHA256 hash of the song file.
+        type: string
+      songId:
+        description: Unique identifier for the song.
+        type: integer
+      songNumber:
+        description: Track number of the song in the album.
+        type: integer
+      title:
+        description: Title of the song.
+        type: string
+      year:
+        description: Release year of the song.
+        type: integer
+    type: object
+  song_handler.getResponse:
+    properties:
+      albumId:
+        description: AlbumId is the identifier of the album to which the song belongs.
+        type: integer
+      artistId:
+        description: ArtistId is the identifier of the song's artist.
+        type: integer
+      audioFileId:
+        description: AudioFileId is the identifier of the associated audio file.
+        type: integer
+      discNumber:
+        description: DiscNumber is the disc number of the song in the album.
+        type: integer
+      genreId:
+        description: GenreId is the genre identifier of the song.
+        type: integer
+      lyrics:
+        description: Lyrics are the lyrics of the song.
+        type: string
+      sha256:
+        description: Sha256 is the SHA256 hash of the song file.
+        type: string
+      songId:
+        description: SongId is the unique identifier for the song.
+        type: integer
+      songNumber:
+        description: SongNumber is the track number of the song in the album.
+        type: integer
+      title:
+        description: Title is the title of the song.
+        type: string
+      year:
+        description: Year is the release year of the song.
+        type: integer
+    type: object
+host: localhost:8023
+info:
+  contact:
+    email: zalimannard@mail.ru
+    name: Dmitry Kolesnikov (Zalimannard)
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: Wakarimi Music Metadata API
+  version: "0.4"
+paths:
+  /albums:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all albums, including their best covers if
+        requested.
+      parameters:
+      - description: Number of best covers for each album to retrieve
+        in: query
+        name: bestCovers
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success response with a list of albums and optional best covers
+            for each
+          schema:
+            $ref: '#/definitions/album_handler.getAllResponse'
+        "400":
+          description: Invalid bestCovers format
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Retrieve all albums
+      tags:
+      - Albums
+  /albums/{albumId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves detailed information about an album, including its best
+        covers if requested.
+      parameters:
+      - description: Album ID
+        in: path
+        name: albumId
+        required: true
+        type: integer
+      - description: Number of best covers to retrieve
+        in: query
+        name: bestCovers
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/album_handler.getResponse'
+        "400":
+          description: Invalid albumId or bestCovers format
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Album not found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Retrieve album details
+      tags:
+      - Albums
+  /albums/{albumId}/songs:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all songs that are part of the specified album, including
+        detailed information about each song.
+      parameters:
+      - description: Unique identifier of the album
+        in: path
+        name: albumId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful response with a list of songs belonging to the requested
+            album
+          schema:
+            $ref: '#/definitions/song_handler.getByAlbumIdResponse'
+        "400":
+          description: Invalid albumId format
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Album not found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Retrieve songs by album ID
+      tags:
+      - Songs
+  /artists:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all artists, including their best covers if
+        requested.
+      parameters:
+      - description: Number of best covers for each artist to retrieve
+        in: query
+        name: bestCovers
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success response with a list of artists and optional best covers
+            for each
+          schema:
+            $ref: '#/definitions/artist_handler.getAllResponse'
+        "400":
+          description: Invalid bestCovers format
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Retrieve all artists
+      tags:
+      - Artists
+  /artists/{artistId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves detailed information about an artist, including its best
+        covers if requested.
+      parameters:
+      - description: Artist ID
+        in: path
+        name: artistId
+        required: true
+        type: integer
+      - description: Number of best covers to retrieve
+        in: query
+        name: bestCovers
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/artist_handler.getResponse'
+        "400":
+          description: Invalid artistId or bestCovers format
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Artist not found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Retrieve artist details
+      tags:
+      - Artists
+  /artists/{artistId}/songs:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all songs that are part of the specified artist, including
+        detailed information about each song.
+      parameters:
+      - description: Unique identifier of the artist
+        in: path
+        name: artistId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful response with a list of songs belonging to the requested
+            artist
+          schema:
+            $ref: '#/definitions/song_handler.getByArtistIdResponse'
+        "400":
+          description: Invalid artistId format
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Artist not found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Retrieve songs by artist ID
+      tags:
+      - Songs
+  /genres:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all genres, including their best covers if
+        requested.
+      parameters:
+      - description: Number of best covers for each genre to retrieve
+        in: query
+        name: bestCovers
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success response with a list of genres and optional best covers
+            for each
+          schema:
+            $ref: '#/definitions/genre_handler.getAllResponse'
+        "400":
+          description: Invalid bestCovers format
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Retrieve all genres
+      tags:
+      - Genres
+  /genres/{genreId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves detailed information about a genre, including its best
+        covers if requested.
+      parameters:
+      - description: Genre ID
+        in: path
+        name: genreId
+        required: true
+        type: integer
+      - description: Number of best covers to retrieve
+        in: query
+        name: bestCovers
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/genre_handler.getResponse'
+        "400":
+          description: Invalid genreId or bestCovers format
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Genre not found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Retrieve genre details
+      tags:
+      - Genres
+  /genres/{genreId}/songs:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all songs that are part of the specified genre, including
+        detailed information about each song.
+      parameters:
+      - description: Unique identifier of the genre
+        in: path
+        name: genreId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful response with a list of songs belonging to the requested
+            genre
+          schema:
+            $ref: '#/definitions/song_handler.getByGenreIdResponse'
+        "400":
+          description: Invalid genreId format
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Genre not found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Retrieve songs by genre ID
+      tags:
+      - Songs
+  /scan:
+    post:
+      consumes:
+      - application/json
+      description: Scans the system for any new or updated songs, updating the database
+        accordingly.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully initiated song scan
+        "500":
+          description: Internal Server Error due to failure in scanning process
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Initiate a scan for new or updated songs
+      tags:
+      - Scan
+  /songs:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves detailed information about all available songs.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful response with list of songs
+          schema:
+            items:
+              $ref: '#/definitions/song_handler.getAllResponseItem'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Retrieve a list of all songs
+      tags:
+      - Songs
+  /songs/{songId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves detailed information about a song specified by its unique
+        ID.
+      parameters:
+      - description: Unique identifier of the song
+        in: path
+        name: songId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successful response with song details
+          schema:
+            $ref: '#/definitions/song_handler.getResponse'
+        "400":
+          description: Invalid songId format
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Song not found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Retrieve a song by its ID
+      tags:
+      - Songs
+swagger: "2.0"
