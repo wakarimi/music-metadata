@@ -12,12 +12,29 @@ import (
 	"strconv"
 )
 
+// getResponse represents the response model for GetAlbum API.
 type getResponse struct {
-	AlbumId   int    `json:"albumId"`
-	Title     string `json:"title"`
+	// Unique identifier for the album.
+	AlbumId int `json:"albumId"`
+	// Title of the album.
+	Title string `json:"title"`
+	// Optional array of best cover IDs.
 	BestCover *[]int `json:"bestCovers,omitempty"`
 }
 
+// Get retrieves detailed information about an album.
+// @Summary Retrieve album details
+// @Description Retrieves detailed information about an album, including its best covers if requested.
+// @Tags Albums
+// @Accept  json
+// @Produce  json
+// @Param   albumId      path    int     true        "Album ID"
+// @Param   bestCovers   query   int     false       "Number of best covers to retrieve"
+// @Success 200 {object} getResponse
+// @Failure 400 {object} response.Error "Invalid albumId or bestCovers format"
+// @Failure 404 {object} response.Error "Album not found"
+// @Failure 500 {object} response.Error "Internal Server Error"
+// @Router /albums/{albumId} [get]
 func (h *Handler) Get(c *gin.Context) {
 	log.Debug().Msg("Getting album")
 
@@ -75,17 +92,22 @@ func (h *Handler) Get(c *gin.Context) {
 		return
 	}
 
-	bestCoversForAlbumResponse := make([]int, 0)
-	if bestCoversInt > 0 {
-		for j := 0; j < mathutil.Min(bestCoversInt, len(bestCovers)); j++ {
-			bestCoversForAlbumResponse = append(bestCoversForAlbumResponse, bestCovers[j])
+	var bestCoverForAlbumResponse *[]int
+	if len(bestCovers) > 0 {
+		bestCoversForAlbumResponse := make([]int, 0)
+		if bestCoversInt > 0 {
+			for j := 0; j < mathutil.Min(bestCoversInt, len(bestCovers)); j++ {
+				bestCoversForAlbumResponse = append(bestCoversForAlbumResponse, bestCovers[j])
+			}
 		}
+	} else {
+		bestCoverForAlbumResponse = nil
 	}
 
 	log.Debug().Msg("Albums got successfully")
 	c.JSON(http.StatusOK, getResponse{
 		AlbumId:   album.AlbumId,
 		Title:     album.Title,
-		BestCover: &bestCoversForAlbumResponse,
+		BestCover: bestCoverForAlbumResponse,
 	})
 }

@@ -8,6 +8,15 @@ import (
 	"net/http"
 )
 
+// Scan handles the request to initiate a scan for new or updated songs.
+// @Summary Initiate a scan for new or updated songs
+// @Description Scans the system for any new or updated songs, updating the database accordingly.
+// @Tags Scan
+// @Accept  json
+// @Produce  json
+// @Success 200 "Successfully initiated song scan"
+// @Failure 500 {object} response.Error "Internal Server Error due to failure in scanning process"
+// @Router /scan [post]
 func (h *Handler) Scan(c *gin.Context) {
 	log.Debug().Msg("Scanning songs")
 

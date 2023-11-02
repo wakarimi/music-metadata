@@ -11,16 +11,33 @@ import (
 	"strconv"
 )
 
+// getAllResponseItem represents a single album item in the GetAllAlbums API response.
 type getAllResponseItem struct {
-	AlbumId   int    `json:"albumId"`
-	Title     string `json:"title"`
+	// Unique identifier for the album.
+	AlbumId int `json:"albumId"`
+	// Title of the album.
+	Title string `json:"title"`
+	// Optional array of best cover IDs for the album.
 	BestCover *[]int `json:"bestCovers,omitempty"`
 }
 
+// getAllResponse represents the response model for GetAllAlbums API.
 type getAllResponse struct {
+	// Array of albums.
 	Albums []getAllResponseItem `json:"albums"`
 }
 
+// GetAll retrieves a list of all albums with optional best covers.
+// @Summary Retrieve all albums
+// @Description Retrieves a list of all albums, including their best covers if requested.
+// @Tags Albums
+// @Accept  json
+// @Produce  json
+// @Param   bestCovers   query   int     false       "Number of best covers for each album to retrieve"
+// @Success 200 {object} getAllResponse "Success response with a list of albums and optional best covers for each"
+// @Failure 400 {object} response.Error "Invalid bestCovers format"
+// @Failure 500 {object} response.Error "Internal Server Error"
+// @Router /albums [get]
 func (h *Handler) GetAll(c *gin.Context) {
 	log.Debug().Msg("Getting albums")
 

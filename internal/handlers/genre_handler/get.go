@@ -12,12 +12,29 @@ import (
 	"strconv"
 )
 
+// getResponse represents the response model for GetGenre API.
 type getResponse struct {
-	GenreId   int    `json:"genreId"`
-	Name      string `json:"name"`
+	// Unique identifier for the genre.
+	GenreId int `json:"genreId"`
+	// Name of the genre.
+	Name string `json:"name"`
+	// Optional array of best cover IDs.
 	BestCover *[]int `json:"bestCovers,omitempty"`
 }
 
+// Get retrieves detailed information about a genre.
+// @Summary Retrieve genre details
+// @Description Retrieves detailed information about a genre, including its best covers if requested.
+// @Tags Genres
+// @Accept  json
+// @Produce  json
+// @Param   genreId      path    int     true        "Genre ID"
+// @Param   bestCovers   query   int     false       "Number of best covers to retrieve"
+// @Success 200 {object} getResponse
+// @Failure 400 {object} response.Error "Invalid genreId or bestCovers format"
+// @Failure 404 {object} response.Error "Genre not found"
+// @Failure 500 {object} response.Error "Internal Server Error"
+// @Router /genres/{genreId} [get]
 func (h *Handler) Get(c *gin.Context) {
 	log.Debug().Msg("Getting genre")
 
@@ -75,17 +92,22 @@ func (h *Handler) Get(c *gin.Context) {
 		return
 	}
 
-	bestCoversForGenreResponse := make([]int, 0)
-	if bestCoversInt > 0 {
-		for j := 0; j < mathutil.Min(bestCoversInt, len(bestCovers)); j++ {
-			bestCoversForGenreResponse = append(bestCoversForGenreResponse, bestCovers[j])
+	var bestCoverForGenreResponse *[]int
+	if len(bestCovers) > 0 {
+		bestCoversForGenreResponse := make([]int, 0)
+		if bestCoversInt > 0 {
+			for j := 0; j < mathutil.Min(bestCoversInt, len(bestCovers)); j++ {
+				bestCoversForGenreResponse = append(bestCoversForGenreResponse, bestCovers[j])
+			}
 		}
+	} else {
+		bestCoverForGenreResponse = nil
 	}
 
 	log.Debug().Msg("Genres got successfully")
 	c.JSON(http.StatusOK, getResponse{
 		GenreId:   genre.GenreId,
 		Name:      genre.Name,
-		BestCover: &bestCoversForGenreResponse,
+		BestCover: bestCoverForGenreResponse,
 	})
 }

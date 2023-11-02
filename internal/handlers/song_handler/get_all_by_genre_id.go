@@ -11,24 +11,50 @@ import (
 	"strconv"
 )
 
+// getByGenreIdResponseItem represents a single song item in the GetSongsByGenreId API response.
 type getByGenreIdResponseItem struct {
-	SongId      int     `json:"songId"`
-	AudioFileId int     `json:"audioFileId"`
-	Title       *string `json:"title"`
-	AlbumId     *int    `json:"albumId"`
-	ArtistId    *int    `json:"artistId"`
-	GenreId     *int    `json:"genreId"`
-	Year        *int    `json:"year"`
-	SongNumber  *int    `json:"songNumber"`
-	DiscNumber  *int    `json:"discNumber"`
-	Lyrics      *string `json:"lyrics"`
-	Sha256      string  `json:"sha256"`
+	// Unique identifier for the song.
+	SongId int `json:"songId"`
+	// Identifier for the associated audio file.
+	AudioFileId int `json:"audioFileId"`
+	// Title of the song.
+	Title *string `json:"title"`
+	// Identifier of the album to which the song belongs.
+	AlbumId *int `json:"albumId"`
+	// Identifier of the artist of the song.
+	ArtistId *int `json:"artistId"`
+	// Genre identifier of the song.
+	GenreId *int `json:"genreId"`
+	// Release year of the song.
+	Year *int `json:"year"`
+	// Track number of the song in the album.
+	SongNumber *int `json:"songNumber"`
+	// Disc number of the song in the album.
+	DiscNumber *int `json:"discNumber"`
+	// Lyrics of the song.
+	Lyrics *string `json:"lyrics"`
+	// SHA256 hash of the song file.
+	Sha256 string `json:"sha256"`
 }
 
+// getByGenreIdResponse represents the response model for GetSongsByGenreId API.
 type getByGenreIdResponse struct {
+	// Array of songs belonging to a specific artist.
 	Songs []getByGenreIdResponseItem `json:"songs"`
 }
 
+// GetByGenreId retrieves a list of songs associated with a specific genre.
+// @Summary Retrieve songs by genre ID
+// @Description Retrieves all songs that are part of the specified genre, including detailed information about each song.
+// @Tags Songs
+// @Accept  json
+// @Produce  json
+// @Param   genreId   path   int     true   "Unique identifier of the genre"
+// @Success 200 {object} getByGenreIdResponse "Successful response with a list of songs belonging to the requested genre"
+// @Failure 400 {object} response.Error "Invalid genreId format"
+// @Failure 404 {object} response.Error "Genre not found"
+// @Failure 500 {object} response.Error "Internal Server Error"
+// @Router /genres/{genreId}/songs [get]
 func (h *Handler) GetByGenreId(c *gin.Context) {
 	log.Debug().Msg("Getting songs by genre")
 

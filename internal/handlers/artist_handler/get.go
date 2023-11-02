@@ -12,12 +12,29 @@ import (
 	"strconv"
 )
 
+// getResponse represents the response model for GetArtist API.
 type getResponse struct {
-	ArtistId  int    `json:"artistId"`
-	Name      string `json:"name"`
+	// Unique identifier for the artist.
+	ArtistId int `json:"artistId"`
+	// Name of the artist.
+	Name string `json:"name"`
+	// Optional array of best cover IDs.
 	BestCover *[]int `json:"bestCovers,omitempty"`
 }
 
+// Get retrieves detailed information about an artist.
+// @Summary Retrieve artist details
+// @Description Retrieves detailed information about an artist, including its best covers if requested.
+// @Tags Artists
+// @Accept  json
+// @Produce  json
+// @Param   artistId      path    int     true        "Artist ID"
+// @Param   bestCovers   query   int     false       "Number of best covers to retrieve"
+// @Success 200 {object} getResponse
+// @Failure 400 {object} response.Error "Invalid artistId or bestCovers format"
+// @Failure 404 {object} response.Error "Artist not found"
+// @Failure 500 {object} response.Error "Internal Server Error"
+// @Router /artists/{artistId} [get]
 func (h *Handler) Get(c *gin.Context) {
 	log.Debug().Msg("Getting artist")
 
@@ -82,10 +99,22 @@ func (h *Handler) Get(c *gin.Context) {
 		}
 	}
 
+	var bestCoverForArtistResponse *[]int
+	if len(bestCovers) > 0 {
+		bestCoversForArtistResponse := make([]int, 0)
+		if bestCoversInt > 0 {
+			for j := 0; j < mathutil.Min(bestCoversInt, len(bestCovers)); j++ {
+				bestCoversForArtistResponse = append(bestCoversForArtistResponse, bestCovers[j])
+			}
+		}
+	} else {
+		bestCoverForArtistResponse = nil
+	}
+
 	log.Debug().Msg("Artists got successfully")
 	c.JSON(http.StatusOK, getResponse{
 		ArtistId:  artist.ArtistId,
 		Name:      artist.Name,
-		BestCover: &bestCoversForArtistResponse,
+		BestCover: bestCoverForArtistResponse,
 	})
 }
