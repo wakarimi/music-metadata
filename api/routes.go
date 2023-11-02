@@ -58,6 +58,11 @@ func SetupRouter(ac *context.AppContext) (r *gin.Engine) {
 
 		api.POST("/scan", songHandler.Scan)
 
+		songs := api.Group("/songs")
+		{
+			songs.GET("", songHandler.GetAll)
+		}
+
 		album := api.Group("/albums")
 		{
 			album.GET("", albumHandler.GetAll)

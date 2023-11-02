@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-type getByAlbumIdResponseItem struct {
+type getByArtistIdResponseItem struct {
 	SongId      int     `db:"songId"`
 	AudioFileId int     `db:"audioFileId"`
 	Title       *string `db:"title"`
@@ -24,35 +24,35 @@ type getByAlbumIdResponseItem struct {
 	Sha256      string  `db:"sha256"`
 }
 
-type getByAlbumIdResponse struct {
-	Songs []getByAlbumIdResponseItem `json:"songs"`
+type getByArtistIdResponse struct {
+	Songs []getByArtistIdResponseItem `json:"songs"`
 }
 
-func (h *Handler) GetByAlbumId(c *gin.Context) {
-	log.Debug().Msg("Getting songs by album")
+func (h *Handler) GetByArtistId(c *gin.Context) {
+	log.Debug().Msg("Getting songs by artist")
 
-	albumIdStr := c.Param("albumId")
-	albumId, err := strconv.Atoi(albumIdStr)
+	artistIdStr := c.Param("artistId")
+	artistId, err := strconv.Atoi(artistIdStr)
 	if err != nil {
-		log.Error().Err(err).Str("albumIdStr", albumIdStr).Msg("Invalid dirId format")
+		log.Error().Err(err).Str("artistIdStr", artistIdStr).Msg("Invalid dirId format")
 		c.JSON(http.StatusBadRequest, response.Error{
-			Message: "Invalid albumId format",
+			Message: "Invalid artistId format",
 			Reason:  err.Error(),
 		})
 		return
 	}
-	log.Debug().Int("albumId", albumId).Msg("Url parameter read successfully")
+	log.Debug().Int("artistId", artistId).Msg("Url parameter read successfully")
 
 	var songs []model.Song
 	err = h.TransactionManager.WithTransaction(func(tx *sqlx.Tx) (err error) {
-		songs, err = h.SongService.GetAllByAlbumId(tx, albumId)
+		songs, err = h.SongService.GetAllByArtistId(tx, artistId)
 		if err != nil {
 			return err
 		}
 		return nil
 	})
 	if err != nil {
-		log.Error().Err(err).Int("albumId", albumId).Msg("Failed to get songs")
+		log.Error().Err(err).Int("artistId", artistId).Msg("Failed to get songs")
 		c.JSON(http.StatusInternalServerError, response.Error{
 			Message: "Failed to get songs",
 			Reason:  err.Error(),
@@ -60,9 +60,9 @@ func (h *Handler) GetByAlbumId(c *gin.Context) {
 		return
 	}
 
-	songsResponseItems := make([]getByAlbumIdResponseItem, len(songs))
+	songsResponseItems := make([]getByArtistIdResponseItem, len(songs))
 	for i, song := range songs {
-		songsResponseItems[i] = getByAlbumIdResponseItem{
+		songsResponseItems[i] = getByArtistIdResponseItem{
 			SongId:      song.SongId,
 			AudioFileId: song.AudioFileId,
 			Title:       song.Title,
@@ -77,8 +77,8 @@ func (h *Handler) GetByAlbumId(c *gin.Context) {
 		}
 	}
 
-	log.Debug().Msg("Genres got successfully")
-	c.JSON(http.StatusOK, getByAlbumIdResponse{
+	log.Debug().Msg("Songs got successfully")
+	c.JSON(http.StatusOK, getByArtistIdResponse{
 		Songs: songsResponseItems,
 	})
 }
