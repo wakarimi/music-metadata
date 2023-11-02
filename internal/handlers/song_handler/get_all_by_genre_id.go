@@ -12,17 +12,17 @@ import (
 )
 
 type getByGenreIdResponseItem struct {
-	SongId      int     `db:"songId"`
-	AudioFileId int     `db:"audioFileId"`
-	Title       *string `db:"title"`
-	AlbumId     *int    `db:"albumId"`
-	ArtistId    *int    `db:"artistId"`
-	GenreId     *int    `db:"genreId"`
-	Year        *int    `db:"year"`
-	SongNumber  *int    `db:"songNumber"`
-	DiscNumber  *int    `db:"discNumber"`
-	Lyrics      *string `db:"lyrics"`
-	Sha256      string  `db:"sha256"`
+	SongId      int     `json:"songId"`
+	AudioFileId int     `json:"audioFileId"`
+	Title       *string `json:"title"`
+	AlbumId     *int    `json:"albumId"`
+	ArtistId    *int    `json:"artistId"`
+	GenreId     *int    `json:"genreId"`
+	Year        *int    `json:"year"`
+	SongNumber  *int    `json:"songNumber"`
+	DiscNumber  *int    `json:"discNumber"`
+	Lyrics      *string `json:"lyrics"`
+	Sha256      string  `json:"sha256"`
 }
 
 type getByGenreIdResponse struct {
