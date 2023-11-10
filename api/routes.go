@@ -31,6 +31,7 @@ func SetupRouter(ac *context.AppContext) (r *gin.Engine) {
 
 	r = gin.New()
 	r.Use(middleware.ZerologMiddleware(log.Logger))
+	r.Use(middleware.CORSMiddleware())
 
 	musicFilesClient := music_files_client.NewClient(ac.Config.HttpServer.MusicFilesAddress)
 	audioFileClient := audio_file_client.NewAudioFileClient(musicFilesClient)
