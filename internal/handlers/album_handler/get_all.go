@@ -18,6 +18,12 @@ type getAllResponseItem struct {
 	Title string `json:"title"`
 }
 
+// getAllResponse represents the response model for GetAllAlbums API.
+type getAllResponse struct {
+	// Array of albums.
+	Albums []getAllResponseItem `json:"albums"`
+}
+
 // GetAll retrieves a list of all albums with optional best covers.
 // @Summary Retrieve all albums
 // @Description Retrieves a list of all albums, including their best covers if requested.
@@ -58,5 +64,7 @@ func (h *Handler) GetAll(c *gin.Context) {
 	}
 
 	log.Debug().Msg("Albums got successfully")
-	c.JSON(http.StatusOK, albumsResponseItems)
+	c.JSON(http.StatusOK, getAllResponse{
+		Albums: albumsResponseItems,
+	})
 }

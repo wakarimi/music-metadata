@@ -81,6 +81,7 @@ func SetupRouter(ac *context.AppContext) (r *gin.Engine) {
 			artist.GET("/:artistId", artistHandler.Get)
 			artist.GET("", artistHandler.GetAll)
 			artist.GET("/:artistId/songs", songHandler.GetByArtistId)
+			artist.GET("/:artistId/covers", coverHandler.GetAllByArtistId)
 		}
 
 		genre := api.Group("/genres")
@@ -88,6 +89,7 @@ func SetupRouter(ac *context.AppContext) (r *gin.Engine) {
 			genre.GET("/:genreId", genreHandler.Get)
 			genre.GET("", genreHandler.GetAll)
 			genre.GET("/:genreId/songs", songHandler.GetByGenreId)
+			genre.GET("/:genreId/covers", coverHandler.GetAllByGenreId)
 		}
 	}
 

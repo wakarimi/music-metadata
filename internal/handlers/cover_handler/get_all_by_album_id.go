@@ -1,6 +1,7 @@
 package cover_handler
 
 import (
+	"music-metadata/internal/errors"
 	"music-metadata/internal/handlers/response"
 	"net/http"
 	"strconv"
@@ -38,6 +39,21 @@ func (h *Handler) GetAllByAlbumId(c *gin.Context) {
 		}
 		return nil
 	})
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get album's covers")
+		if _, ok := err.(errors.NotFound); ok {
+			c.JSON(http.StatusNotFound, response.Error{
+				Message: "Album not found",
+				Reason:  err.Error(),
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, response.Error{
+				Message: "Failed to get album's covers",
+				Reason:  err.Error(),
+			})
+		}
+		return
+	}
 
 	log.Debug().Msg("Covers for album got")
 	c.JSON(http.StatusOK, getAllByAlbumIdResponse{
