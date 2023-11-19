@@ -14,8 +14,8 @@ type Handler struct {
 
 func NewHandler(albumService album_service.Service,
 	coverService cover_service.Service,
-	transactionManager service.TransactionManager) (h *Handler) {
-
+	transactionManager service.TransactionManager,
+) (h *Handler) {
 	h = &Handler{
 		AlbumService:       albumService,
 		CoverService:       coverService,

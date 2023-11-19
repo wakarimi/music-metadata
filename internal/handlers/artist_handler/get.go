@@ -1,15 +1,15 @@
 package artist_handler
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog/log"
-	"modernc.org/mathutil"
 	"music-metadata/internal/errors"
 	"music-metadata/internal/handlers/response"
 	"music-metadata/internal/model"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+	"github.com/rs/zerolog/log"
 )
 
 // getResponse represents the response model for GetArtist API.
@@ -18,8 +18,6 @@ type getResponse struct {
 	ArtistId int `json:"artistId"`
 	// Name of the artist.
 	Name string `json:"name"`
-	// Optional array of best cover IDs.
-	BestCover *[]int `json:"bestCovers,omitempty"`
 }
 
 // Get retrieves detailed information about an artist.
@@ -50,29 +48,11 @@ func (h *Handler) Get(c *gin.Context) {
 	}
 	log.Debug().Int("artistId", artistId).Msg("Url parameter read successfully")
 
-	bestCoversStr := c.DefaultQuery("bestCovers", "0")
-	bestCoversInt, err := strconv.Atoi(bestCoversStr)
-	if err != nil {
-		log.Error().Err(err).Msg("Invalid bestCovers format")
-		c.JSON(http.StatusBadRequest, response.Error{
-			Message: "Invalid bestCovers format",
-			Reason:  err.Error(),
-		})
-		return
-	}
-
 	var artist model.Artist
-	var bestCovers []int
 	err = h.TransactionManager.WithTransaction(func(tx *sqlx.Tx) (err error) {
 		artist, err = h.ArtistService.Get(tx, artistId)
 		if err != nil {
 			return err
-		}
-		if bestCoversInt > 0 {
-			bestCovers, err = h.CoverService.CalcBestCoversForArtist(tx, artist.ArtistId)
-			if err != nil {
-				return err
-			}
 		}
 		return nil
 	})
@@ -92,29 +72,9 @@ func (h *Handler) Get(c *gin.Context) {
 		return
 	}
 
-	bestCoversForArtistResponse := make([]int, 0)
-	if bestCoversInt > 0 {
-		for j := 0; j < mathutil.Min(bestCoversInt, len(bestCovers)); j++ {
-			bestCoversForArtistResponse = append(bestCoversForArtistResponse, bestCovers[j])
-		}
-	}
-
-	var bestCoverForArtistResponse *[]int
-	if len(bestCovers) > 0 {
-		bestCoversForArtistResponse := make([]int, 0)
-		if bestCoversInt > 0 {
-			for j := 0; j < mathutil.Min(bestCoversInt, len(bestCovers)); j++ {
-				bestCoversForArtistResponse = append(bestCoversForArtistResponse, bestCovers[j])
-			}
-		}
-	} else {
-		bestCoverForArtistResponse = nil
-	}
-
 	log.Debug().Msg("Artists got successfully")
 	c.JSON(http.StatusOK, getResponse{
-		ArtistId:  artist.ArtistId,
-		Name:      artist.Name,
-		BestCover: bestCoverForArtistResponse,
+		ArtistId: artist.ArtistId,
+		Name:     artist.Name,
 	})
 }

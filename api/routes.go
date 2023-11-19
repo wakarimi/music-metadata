@@ -1,10 +1,6 @@
 package api
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog/log"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 	"music-metadata/internal/client/music_files_client"
 	"music-metadata/internal/client/music_files_client/audio_file_client"
 	"music-metadata/internal/context"
@@ -14,6 +10,7 @@ import (
 	"music-metadata/internal/database/repository/song_repo"
 	"music-metadata/internal/handlers/album_handler"
 	"music-metadata/internal/handlers/artist_handler"
+	"music-metadata/internal/handlers/cover_handler"
 	"music-metadata/internal/handlers/genre_handler"
 	"music-metadata/internal/handlers/song_handler"
 	"music-metadata/internal/middleware"
@@ -23,6 +20,11 @@ import (
 	"music-metadata/internal/service/cover_service"
 	"music-metadata/internal/service/genre_service"
 	"music-metadata/internal/service/song_service"
+
+	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func SetupRouter(ac *context.AppContext) (r *gin.Engine) {
@@ -52,6 +54,7 @@ func SetupRouter(ac *context.AppContext) (r *gin.Engine) {
 	artistHandler := artist_handler.NewHandler(*artistService, *coverService, txManager)
 	genreHandler := genre_handler.NewHandler(*genreService, *coverService, txManager)
 	songHandler := song_handler.NewHandler(*songService, txManager)
+	coverHandler := cover_handler.NewHandler(*coverService, txManager)
 
 	api := r.Group("/api")
 	{
@@ -70,6 +73,7 @@ func SetupRouter(ac *context.AppContext) (r *gin.Engine) {
 			album.GET("/:albumId", albumHandler.Get)
 			album.GET("", albumHandler.GetAll)
 			album.GET("/:albumId/songs", songHandler.GetByAlbumId)
+			album.GET("/:albumId/covers", coverHandler.GetAllByAlbumId)
 		}
 
 		artist := api.Group("/artists")

@@ -1,15 +1,15 @@
 package genre_handler
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog/log"
-	"modernc.org/mathutil"
 	"music-metadata/internal/errors"
 	"music-metadata/internal/handlers/response"
 	"music-metadata/internal/model"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+	"github.com/rs/zerolog/log"
 )
 
 // getResponse represents the response model for GetGenre API.
@@ -18,8 +18,6 @@ type getResponse struct {
 	GenreId int `json:"genreId"`
 	// Name of the genre.
 	Name string `json:"name"`
-	// Optional array of best cover IDs.
-	BestCover *[]int `json:"bestCovers,omitempty"`
 }
 
 // Get retrieves detailed information about a genre.
@@ -50,29 +48,11 @@ func (h *Handler) Get(c *gin.Context) {
 	}
 	log.Debug().Int("genreId", genreId).Msg("Url parameter read successfully")
 
-	bestCoversStr := c.DefaultQuery("bestCovers", "0")
-	bestCoversInt, err := strconv.Atoi(bestCoversStr)
-	if err != nil {
-		log.Error().Err(err).Msg("Invalid bestCovers format")
-		c.JSON(http.StatusBadRequest, response.Error{
-			Message: "Invalid bestCovers format",
-			Reason:  err.Error(),
-		})
-		return
-	}
-
 	var genre model.Genre
-	var bestCovers []int
 	err = h.TransactionManager.WithTransaction(func(tx *sqlx.Tx) (err error) {
 		genre, err = h.GenreService.Get(tx, genreId)
 		if err != nil {
 			return err
-		}
-		if bestCoversInt > 0 {
-			bestCovers, err = h.CoverService.CalcBestCoversForGenre(tx, genre.GenreId)
-			if err != nil {
-				return err
-			}
 		}
 		return nil
 	})
@@ -92,22 +72,9 @@ func (h *Handler) Get(c *gin.Context) {
 		return
 	}
 
-	var bestCoverForGenreResponse *[]int
-	if len(bestCovers) > 0 {
-		bestCoversForGenreResponse := make([]int, 0)
-		if bestCoversInt > 0 {
-			for j := 0; j < mathutil.Min(bestCoversInt, len(bestCovers)); j++ {
-				bestCoversForGenreResponse = append(bestCoversForGenreResponse, bestCovers[j])
-			}
-		}
-	} else {
-		bestCoverForGenreResponse = nil
-	}
-
 	log.Debug().Msg("Genres got successfully")
 	c.JSON(http.StatusOK, getResponse{
-		GenreId:   genre.GenreId,
-		Name:      genre.Name,
-		BestCover: bestCoverForGenreResponse,
+		GenreId: genre.GenreId,
+		Name:    genre.Name,
 	})
 }

@@ -1,14 +1,15 @@
 package song_handler
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog/log"
 	"music-metadata/internal/errors"
 	"music-metadata/internal/handlers/response"
 	"music-metadata/internal/model"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+	"github.com/rs/zerolog/log"
 )
 
 // getResponse represents a single song item in the response of the Get API.
