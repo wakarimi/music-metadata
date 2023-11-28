@@ -1,11 +1,12 @@
 package song_handler
 
 import (
+	"music-metadata/internal/handlers/response"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
-	"music-metadata/internal/handlers/response"
-	"net/http"
 )
 
 // Scan handles the request to initiate a scan for new or updated songs.

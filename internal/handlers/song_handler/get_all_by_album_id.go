@@ -1,14 +1,15 @@
 package song_handler
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/jmoiron/sqlx"
-	"github.com/rs/zerolog/log"
 	"music-metadata/internal/errors"
 	"music-metadata/internal/handlers/response"
 	"music-metadata/internal/model"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
+	"github.com/jmoiron/sqlx"
+	"github.com/rs/zerolog/log"
 )
 
 // getByAlbumIdResponseItem represents a single song item in the GetSongsByAlbumId API response.
@@ -61,7 +62,7 @@ func (h *Handler) GetByAlbumId(c *gin.Context) {
 	albumIdStr := c.Param("albumId")
 	albumId, err := strconv.Atoi(albumIdStr)
 	if err != nil {
-		log.Error().Err(err).Str("albumIdStr", albumIdStr).Msg("Invalid dirId format")
+		log.Error().Err(err).Str("albumIdStr", albumIdStr).Msg("Invalid albumId format")
 		c.JSON(http.StatusBadRequest, response.Error{
 			Message: "Invalid albumId format",
 			Reason:  err.Error(),
